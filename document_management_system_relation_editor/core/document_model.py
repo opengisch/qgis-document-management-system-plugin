@@ -9,7 +9,7 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex
+from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QDir
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext
 
 class Role(Enum):
@@ -28,7 +28,7 @@ class DocumentModel(QAbstractTableModel):
         self._relation = QgsRelation()
         self._document_path = str()
         self._feature = QgsFeature()
-        self._related_features = []
+        self._file_list = []
 
     def init(self, relation: QgsRelation, feature: QgsFeature, document_path: str):
         self._relation = relation
@@ -37,7 +37,7 @@ class DocumentModel(QAbstractTableModel):
         self._updateData()
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
-        return len(self._related_features)
+        return len(self._file_list)
 
     def columnCount(self, parent: QModelIndex = ...) -> int:
         return 1
@@ -54,10 +54,7 @@ class DocumentModel(QAbstractTableModel):
             return None
 
         if role == self.DocumentPathRole:
-            exp = QgsExpression(self._document_path)
-            context = QgsExpressionContext()
-            context.setFeature(self._related_features[index.row()])
-            return exp.evaluate(context)
+            return self._file_list[ index.row() ]
 
         return None
 
@@ -74,14 +71,15 @@ class DocumentModel(QAbstractTableModel):
 
     def _updateData(self):
         self.beginResetModel()
-        self._related_features = []
+        self._file_list = []
 
-        if len(self._relation.isValid() and self._feature.isValid()):
-            request = self._relation.getRelatedFeaturesRequest(self._feature)
-            for f in self._relation.referencingLayer().getFeatures(request):
-                self._related_features.append(f)
+        exp = QgsExpression(self._document_path)
+        context = QgsExpressionContext()
 
-            sorted(self._related_features, key=lambda _f: _f[self._ordering_field])
+        #qDir = QDir(exp.evaluate(context), ['*'], QDir.Files)
+        qDir = QDir('/home/domi')
+
+        self._file_list = qDir.entryList(['*'], QDir.Files)
 
         self.endResetModel()
 
