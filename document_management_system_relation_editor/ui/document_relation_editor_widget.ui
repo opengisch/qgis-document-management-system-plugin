@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OrderedRelationEditorWidgetBase</class>
- <widget class="QWidget" name="OrderedRelationEditorWidgetBase">
+ <class>DocumentRelationEditorWidgetBase</class>
+ <widget class="QWidget" name="DocumentRelationEditorWidgetBase">
   <property name="geometry">
    <rect>
     <x>0</x>

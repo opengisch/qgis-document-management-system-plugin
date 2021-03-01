@@ -19,22 +19,20 @@ class Role(Enum):
     FieldRole = Qt.UserRole + 4
 
 
-class OrderedRelationModel(QAbstractTableModel):
+class DocumentModel(QAbstractTableModel):
 
-    ImagePathRole = Qt.UserRole + 1
+    DocumentPathRole = Qt.UserRole + 1
 
     def __init__(self, parent: QObject = None):
-        super(OrderedRelationModel, self).__init__(parent)
+        super(DocumentModel, self).__init__(parent)
         self._relation = QgsRelation()
-        self._ordering_field = str()
-        self._image_path = str()
+        self._document_path = str()
         self._feature = QgsFeature()
         self._related_features = []
 
-    def init(self, relation: QgsRelation, ordering_field: str, feature: QgsFeature, image_path: str):
+    def init(self, relation: QgsRelation, feature: QgsFeature, document_path: str):
         self._relation = relation
-        self._ordering_field = ordering_field
-        self._image_path = image_path
+        self._document_path = document_path
         self._feature = feature
         self._updateData()
 
@@ -55,8 +53,8 @@ class OrderedRelationModel(QAbstractTableModel):
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
             return None
 
-        if role == self.ImagePathRole:
-            exp = QgsExpression(self._image_path)
+        if role == self.DocumentPathRole:
+            exp = QgsExpression(self._document_path)
             context = QgsExpressionContext()
             context.setFeature(self._related_features[index.row()])
             return exp.evaluate(context)
@@ -71,14 +69,14 @@ class OrderedRelationModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
-            self.ImagePathRole: b'ImagePath'
+            self.DocumentPathRole: b'DocumentPath'
         }
 
     def _updateData(self):
         self.beginResetModel()
         self._related_features = []
 
-        if len(self._ordering_field) > 0 and self._relation.isValid() and self._feature.isValid():
+        if len(self._relation.isValid() and self._feature.isValid()):
             request = self._relation.getRelatedFeaturesRequest(self._feature)
             for f in self._relation.referencingLayer().getFeatures(request):
                 self._related_features.append(f)

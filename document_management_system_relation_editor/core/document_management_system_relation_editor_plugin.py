@@ -11,14 +11,14 @@
 import os
 from qgis.PyQt.QtCore import QCoreApplication, QTranslator, QObject, QLocale, QSettings
 from qgis.gui import QgisInterface, QgsGui
-from ordered_relation_editor.gui.ordered_relation_editor_widget_factory import OrderedRelationEditorWidgetFactory, WIDGET_TYPE
+from document_management_system_relation_editor.gui.document_relation_editor_widget_factory import DocumentRelationEditorWidgetFactory, WIDGET_TYPE
 
 DEBUG = True
 
 
 class DocumentManagementSystemRelationEditorPlugin(QObject):
 
-    plugin_name = "&Ordered Relation Editor"
+    plugin_name = "&Document Management System Relation Editor"
 
     def __init__(self, iface: QgisInterface):
         QObject.__init__(self)
@@ -32,7 +32,7 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
         QCoreApplication.installTranslator(self.translator)
 
     def initGui(self):
-        QgsGui.relationWidgetRegistry().addRelationWidget(OrderedRelationEditorWidgetFactory())
+        QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorWidgetFactory())
 
     def unload(self):
         QgsGui.relationWidgetRegistry().removeRelationWidget(WIDGET_TYPE)

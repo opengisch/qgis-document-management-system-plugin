@@ -6,16 +6,14 @@ Item {
     width: 200
     height: 300
 
-
     ListView {
         id: listView
         anchors.fill: parent
 
-        model: orderedModel
+        model: documentModel
 
         delegate: Text {
-            text: "Animal: " +  ImagePath
+            text: "Animal: " +  DocumentPath
         }
     }
-
 }
