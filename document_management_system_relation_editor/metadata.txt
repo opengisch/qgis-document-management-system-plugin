@@ -1,0 +1,23 @@
+[general]
+name=Document Management System Relation Editor
+qgisMinimumVersion=3.17
+description=Provides a relation editor widget to handle document management system relations
+about=Provides a relation editor widget to handle ordered relations
+version=dev
+author=Denis Rouzaud
+email=denis@opengis.ch
+
+# Tags are comma separated with spaces allowed
+tags=relation
+
+tracker=https://github.com/opengisch/qgis-ordered-relation-editor-plugin/issues
+homepage=https://github.com/opengisch/qgis-ordered-relation-editor-plugin
+repository=https://github.com/opengisch/qgis-ordered-relation-editor-plugin
+
+category=Vector
+
+# experimental flag
+experimental=False
+
+# change icon...
+#icon=icons/swiss_locator.png
