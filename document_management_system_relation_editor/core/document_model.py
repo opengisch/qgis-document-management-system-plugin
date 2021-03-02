@@ -22,6 +22,7 @@ class Role(Enum):
 class DocumentModel(QAbstractTableModel):
 
     DocumentPathRole = Qt.UserRole + 1
+    DocumentNameRole = Qt.UserRole + 2
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -54,7 +55,10 @@ class DocumentModel(QAbstractTableModel):
             return None
 
         if role == self.DocumentPathRole:
-            return self._file_list[ index.row() ]
+            return self._file_list[ index.row() ].filePath()
+
+        if role == self.DocumentNameRole:
+            return self._file_list[ index.row() ].fileName()
 
         return None
 
@@ -66,7 +70,8 @@ class DocumentModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
-            self.DocumentPathRole: b'DocumentPath'
+            self.DocumentPathRole: b'DocumentPath',
+            self.DocumentNameRole: b'DocumentName'
         }
 
     def _updateData(self):
@@ -75,14 +80,18 @@ class DocumentModel(QAbstractTableModel):
 
         exp = QgsExpression(self._document_path)
         context = QgsExpressionContext()
+        expression_result = exp.evaluate(context)
 
-        #qDir = QDir(exp.evaluate(context), ['*'], QDir.Files)
-        qDir = QDir('/home/domi')
+        if isinstance(expression_result, str):
+            self._file_list = (QDir(expression_result).entryInfoList(['*'], QDir.Files))
 
-        self._file_list = qDir.entryList(['*'], QDir.Files)
+        elif isinstance(expression_result, list):
+            for path in expression_result:
+                self._file_list.extend(QDir(path).entryInfoList(['*'], QDir.Files))
+
+        else:
+            pass
+            #error happened
 
         self.endResetModel()
-
-
-
 
