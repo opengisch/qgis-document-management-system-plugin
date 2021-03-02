@@ -9,8 +9,9 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QDir
-from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext
+from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QDir, QMimeDatabase
+from qgis.PyQt.QtGui import QIcon
+from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication
 
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
@@ -23,6 +24,7 @@ class DocumentModel(QAbstractTableModel):
 
     DocumentPathRole = Qt.UserRole + 1
     DocumentNameRole = Qt.UserRole + 2
+    DocumentIconRole = Qt.UserRole + 3
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -55,10 +57,19 @@ class DocumentModel(QAbstractTableModel):
             return None
 
         if role == self.DocumentPathRole:
-            return self._file_list[ index.row() ].filePath()
+            return self._file_list[ index.row() ]#.filePath()
 
         if role == self.DocumentNameRole:
-            return self._file_list[ index.row() ].fileName()
+            return self._file_list[ index.row() ]#.fileName()
+
+        if role == self.DocumentIconRole:
+            mime_database = QMimeDatabase()
+            mime_types = mime_database.mimeTypesForFileName(self._file_list[ index.row() ])#.filePath())
+            for mime_type in mime_types:
+              if mime_type:
+                return mime_type.iconName()
+
+            return ""
 
         return None
 
@@ -71,27 +82,38 @@ class DocumentModel(QAbstractTableModel):
     def roleNames(self):
         return {
             self.DocumentPathRole: b'DocumentPath',
-            self.DocumentNameRole: b'DocumentName'
+            self.DocumentNameRole: b'DocumentName',
+            self.DocumentIconRole: b'DocumentIcon'
         }
 
     def _updateData(self):
         self.beginResetModel()
         self._file_list = []
 
-        exp = QgsExpression(self._document_path)
-        context = QgsExpressionContext()
-        expression_result = exp.evaluate(context)
+        self._file_list.append("Valid relation: {} Valid feature: {}".format(self._relation.isValid(), self._feature.isValid()))
 
-        if isinstance(expression_result, str):
-            self._file_list = (QDir(expression_result).entryInfoList(['*'], QDir.Files))
+        if self._relation.isValid() and self._feature.isValid():
+            request = self._relation.getRelatedFeaturesRequest(self._feature)
+            for f in self._relation.referencingLayer().getFeatures(request):
+                self._file_list.append("f")
+                #self._related_features.append(f)
 
-        elif isinstance(expression_result, list):
-            for path in expression_result:
-                self._file_list.extend(QDir(path).entryInfoList(['*'], QDir.Files))
+            self._file_list.append("b")
 
-        else:
-            pass
-            #error happened
+#        exp = QgsExpression(self._document_path)
+#        context = QgsExpressionContext()
+#        expression_result = exp.evaluate(context)
+
+#        if isinstance(expression_result, str):
+#            self._file_list = (QDir(expression_result).entryInfoList(['*'], QDir.Files))
+
+#        elif isinstance(expression_result, list):
+#            for path in expression_result:
+#                self._file_list.extend(QDir(path).entryInfoList(['*'], QDir.Files))
+
+#        else:
+#            pass
+#            #error happened
 
         self.endResetModel()
 
