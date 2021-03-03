@@ -8,6 +8,7 @@ Item {
         id: rectangle_Header
         width: parent.width
         height: 40
+        z: 1
         color: "lightgray"
         border.color: "purple"
 
@@ -22,9 +23,13 @@ Item {
 
         Button {
             id: button_IconView
-            text: qsTr("Icon view")
             anchors.right: rectangle_Header.right
             anchors.verticalCenter: parent.verticalCenter
+            text: qsTr("Icon view")
+            checkable: true
+            checked: false
+
+            onToggled: button_ListView.checked = !button_IconView.checked
         }
 
         Button {
@@ -32,6 +37,10 @@ Item {
             anchors.right: button_IconView.left
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("List view")
+            checkable: true
+            checked: true
+
+            onToggled: button_IconView.checked = !button_ListView.checked
         }
     }
 
@@ -41,6 +50,7 @@ Item {
         width: parent.width
         height: 40
         anchors.bottom: parent.bottom
+        z: 1
         color: "lightgray"
         border.color: "cyan"
 
@@ -64,7 +74,8 @@ Item {
         width: parent.width
         anchors.top: rectangle_Header.bottom
         anchors.bottom: rectangle_Footer.top
-
+        z: 0
+        visible: button_ListView.checked
         focus: true
         model: documentModel
         highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
@@ -167,6 +178,135 @@ Item {
         }
     } // ListView
 
+    GridView {
+        id: gridView
+        width: parent.width
+        anchors.top: rectangle_Header.bottom
+        anchors.bottom: rectangle_Footer.top
+        z: 0
+        visible: !button_ListView.checked
+        focus: true
+        model: documentModel
+        cellWidth: 100
+        cellHeight: 140
+        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+
+        delegate: Component {
+            Item
+            {
+                id: item_Delegate
+                width: gridView.cellWidth
+                height: gridView.cellHeight
+
+                property bool isImage: DocumentType === "image/jpeg"
+
+                Column {
+                    anchors.fill: parent
+
+
+                    Button {
+                        width: parent.width
+                        height: 60
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: !item_Delegate.isImage
+                        flat: true
+                        icon.name: DocumentIcon
+                    }
+                    Image {
+                        width: parent.width
+                        height: 60
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: item_Delegate.isImage
+                        source: DocumentPath
+                        fillMode: Image.PreserveAspectFit
+                    }
+                    Text {
+                        id: textDocumentName
+                        width: parent.width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: DocumentName
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
+                    }
+                }
+
+                ToolTip {
+                    id: toolTip
+                    visible: mouseArea.containsMouse
+                    delay: 1000
+
+                    contentItem: Row{
+                        spacing: 5
+
+                        Image {
+                            height: column_Names.height
+                            visible: true
+                            source: DocumentPath
+                            fillMode: Image.PreserveAspectFit
+                        }
+
+                        Column {
+                            id: column_Names
+                            Text {
+                                color: "white"
+                                text: qsTr("Path:")
+                            }
+                            Text {
+                                color: "white"
+                                text: qsTr("Type:")
+                            }
+                            Text {
+                                color: "white"
+                                text: qsTr("Created on:")
+                            }
+                            Text {
+                                color: "white"
+                                text: qsTr("Created by:")
+                            }
+                        }
+
+                        Column {
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentPath
+                                text: DocumentPath ? DocumentPath : "<Unknown>"
+                            }
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentType
+                                text: DocumentType ? DocumentType : "<Unknown>"
+                            }
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentCreatedTime
+                                text: DocumentCreatedTime ? DocumentCreatedTime : "<Unknown>"
+                            }
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentCreatedUser
+                                text: DocumentCreatedUser ? DocumentCreatedUser : "<Unknown>"
+                            }
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: mouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: {
+                        gridView.currentIndex = index
+
+                        if(mouse.button == Qt.RightButton)
+                            contextMenu.popup()
+
+                    }
+                    onDoubleClicked: Qt.openUrlExternally(DocumentPath);
+                }
+            }
+        }
+    } // GridView
 
     Menu {
         id: contextMenu
