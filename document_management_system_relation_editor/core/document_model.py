@@ -9,6 +9,7 @@
 # -----------------------------------------------------------
 
 from enum import Enum
+import getpass
 from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QDir, QMimeDatabase
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication
@@ -22,9 +23,12 @@ class Role(Enum):
 
 class DocumentModel(QAbstractTableModel):
 
-    DocumentPathRole = Qt.UserRole + 1
-    DocumentNameRole = Qt.UserRole + 2
-    DocumentIconRole = Qt.UserRole + 3
+    DocumentPathRole    = Qt.UserRole + 1
+    DocumentNameRole    = Qt.UserRole + 2
+    DocumentTypeRole    = Qt.UserRole + 3
+    DocumentCreatedTime = Qt.UserRole + 4
+    DocumentCreatedUser = Qt.UserRole + 5
+    DocumentIconRole    = Qt.UserRole + 6
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -56,22 +60,7 @@ class DocumentModel(QAbstractTableModel):
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
             return None
 
-        if role == self.DocumentPathRole:
-            return self._file_list[ index.row() ]#.filePath()
-
-        if role == self.DocumentNameRole:
-            return self._file_list[ index.row() ]#.fileName()
-
-        if role == self.DocumentIconRole:
-            mime_database = QMimeDatabase()
-            mime_types = mime_database.mimeTypesForFileName(self._file_list[ index.row() ])#.filePath())
-            for mime_type in mime_types:
-              if mime_type:
-                return mime_type.iconName()
-
-            return ""
-
-        return None
+        return self._file_list[ index.row() ][ role ]
 
     def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
@@ -81,39 +70,52 @@ class DocumentModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
-            self.DocumentPathRole: b'DocumentPath',
-            self.DocumentNameRole: b'DocumentName',
-            self.DocumentIconRole: b'DocumentIcon'
+            self.DocumentPathRole:    b'DocumentPath',
+            self.DocumentNameRole:    b'DocumentName',
+            self.DocumentTypeRole:    b'DocumentType',
+            self.DocumentCreatedTime: b'DocumentCreatedTime',
+            self.DocumentCreatedUser: b'DocumentCreatedUser',
+            self.DocumentIconRole:    b'DocumentIcon'
         }
 
     def _updateData(self):
         self.beginResetModel()
         self._file_list = []
 
-        self._file_list.append("Valid relation: {} Valid feature: {}".format(self._relation.isValid(), self._feature.isValid()))
+#        self._file_list.append("Valid relation: {} Valid feature: {}".format(self._relation.isValid(), self._feature.isValid()))
 
-        if self._relation.isValid() and self._feature.isValid():
-            request = self._relation.getRelatedFeaturesRequest(self._feature)
-            for f in self._relation.referencingLayer().getFeatures(request):
-                self._file_list.append("f")
+#        if self._relation.isValid() and self._feature.isValid():
+#            request = self._relation.getRelatedFeaturesRequest(self._feature)
+#            for f in self._relation.referencingLayer().getFeatures(request):
+#                self._file_list.append("f")
                 #self._related_features.append(f)
 
-            self._file_list.append("b")
+#            self._file_list.append("b")
 
 #        exp = QgsExpression(self._document_path)
 #        context = QgsExpressionContext()
 #        expression_result = exp.evaluate(context)
 
-#        if isinstance(expression_result, str):
-#            self._file_list = (QDir(expression_result).entryInfoList(['*'], QDir.Files))
+        file_info_list = QDir("/home/domi").entryInfoList(['*'], QDir.Files)
 
-#        elif isinstance(expression_result, list):
-#            for path in expression_result:
-#                self._file_list.extend(QDir(path).entryInfoList(['*'], QDir.Files))
+        mime_database = QMimeDatabase()
+        for file_info in file_info_list:
+          mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
+          mime_type_name = str()
+          icon_name = str()
+          for mime_type in mime_types:
+            mime_type_name = mime_type.name()
+            if mime_type:
+              icon_name = mime_type.iconName()
+              break
 
-#        else:
-#            pass
-#            #error happened
+          self._file_list.append({ self.DocumentPathRole: file_info.filePath(),
+                                   self.DocumentNameRole: file_info.fileName(),
+                                   self.DocumentTypeRole: mime_type_name,
+                                   self.DocumentCreatedTime: file_info.created(),
+                                   self.DocumentCreatedUser: getpass.getuser(),
+                                   self.DocumentIconRole: icon_name
+                                 })
 
         self.endResetModel()
 

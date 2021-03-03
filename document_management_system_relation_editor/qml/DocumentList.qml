@@ -43,19 +43,104 @@ Item {
                     anchors.left: buttonIcon.right
 
                     text: DocumentName
-
-                    ToolTip.visible: mouseArea.containsMouse
-                    ToolTip.delay: 1000
-                    ToolTip.text: DocumentPath
                 }
+
+                ToolTip {
+                    id: toolTip
+                    visible: mouseArea.containsMouse
+                    delay: 1000
+
+                    contentItem: Row{
+
+                        spacing: 5
+
+                        Column {
+                            Text {
+                                color: "white"
+                                text: qsTr("Path:")
+                            }
+                            Text {
+                                color: "white"
+                                text: qsTr("Type:")
+                            }
+                            Text {
+                                color: "white"
+                                text: qsTr("Created on:")
+                            }
+                            Text {
+                                color: "white"
+                                text: qsTr("Created by:")
+                            }
+                        }
+
+                        Column {
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentPath
+                                text: DocumentPath ? DocumentPath : "<Unknown>"
+                            }
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentType
+                                text: DocumentType ? DocumentType : "<Unknown>"
+                            }
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentCreatedTime
+                                text: DocumentCreatedTime ? DocumentCreatedTime : "<Unknown>"
+                            }
+                            Text {
+                                color: "white"
+                                font.italic: !DocumentCreatedUser
+                                text: DocumentCreatedUser ? DocumentCreatedUser : "<Unknown>"
+                            }
+                        }
+                    }
+                }
+
                 MouseArea {
                     id: mouseArea
-                    hoverEnabled: true
                     anchors.fill: parent
-                    onClicked: listView.currentIndex = index
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: {
+                      listView.currentIndex = index
+
+                      if(mouse.button == Qt.RightButton)
+                          contextMenu.popup()
+
+                    }
+
                     onDoubleClicked: Qt.openUrlExternally(DocumentPath);
+
+                    Menu {
+                        id: contextMenu
+                        MenuItem {
+                            text: "Show form"
+                            onTriggered: showForm()
+                        }
+                        MenuItem {
+                            text: "Remove link"
+                            onTriggered: removeLink()
+                        }
+                    }
                 }
             }
         }
     }
+
+    DropArea {
+      anchors.fill: parent
+      keys: ["text/uri-list"]
+
+      onDropped:
+      {
+        if (drop.hasUrls)
+        {
+          var fileUrl = drop.urls[0];
+          textHeader.text = fileUrl;
+          drop.acceptProposedAction();
+        }
+      }
+    } // DropArea
 }
