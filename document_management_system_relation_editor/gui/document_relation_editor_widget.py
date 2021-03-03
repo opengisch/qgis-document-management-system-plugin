@@ -54,8 +54,9 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         self.view = QQuickWidget()
         self.view.rootContext().setContextProperty("documentModel", self.model)
         self.view.setSource(QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), '../qml/DocumentList.qml')))
+        self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
         layout.addWidget(self.view)
-        self.mListView.setLayout(layout)
+        self.setLayout(layout)
 
     def config(self):
         return {
