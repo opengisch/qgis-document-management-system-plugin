@@ -10,9 +10,10 @@
 
 from PyQt5.QtQuickWidgets import QQuickWidget
 import os
-from qgis.PyQt.QtCore import QUrl, QObject, pyqtSignal, pyqtProperty
+from qgis.PyQt.QtCore import QUrl, QObject, pyqtSignal, pyqtProperty, pyqtSlot
 from qgis.PyQt.QtWidgets import QVBoxLayout
 from qgis.PyQt.uic import loadUiType
+from qgis.core import QgsApplication
 from qgis.gui import QgsAbstractRelationEditorWidget
 from document_management_system_relation_editor.core.document_model import DocumentModel
 
@@ -52,6 +53,9 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
         layout = QVBoxLayout()
         self.view = QQuickWidget()
+        self.view.rootContext().setContextProperty("parent", self)
+        self.view.rootContext().setContextProperty("qgsApplicationInstance", QgsApplication.instance())
+        self.view.rootContext().setContextProperty("themePath", QgsApplication.defaultThemePath())
         self.view.rootContext().setContextProperty("documentModel", self.model)
         self.view.setSource(QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), '../qml/DocumentList.qml')))
         self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
@@ -69,3 +73,7 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
     def updateUi(self):
         print('updateUi')
         self.model.init(self.relation(), self.feature(), self.document_path)
+
+    @pyqtSlot(str)
+    def getPath(self, iconName):
+      return QgsApplication.getThemeIcon(iconName)

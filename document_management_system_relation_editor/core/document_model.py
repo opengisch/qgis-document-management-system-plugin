@@ -23,12 +23,13 @@ class Role(Enum):
 
 class DocumentModel(QAbstractTableModel):
 
-    DocumentPathRole    = Qt.UserRole + 1
-    DocumentNameRole    = Qt.UserRole + 2
-    DocumentTypeRole    = Qt.UserRole + 3
-    DocumentCreatedTime = Qt.UserRole + 4
-    DocumentCreatedUser = Qt.UserRole + 5
-    DocumentIconRole    = Qt.UserRole + 6
+    DocumentPathRole        = Qt.UserRole + 1
+    DocumentNameRole        = Qt.UserRole + 2
+    DocumentTypeRole        = Qt.UserRole + 3
+    DocumentCreatedTimeRole = Qt.UserRole + 4
+    DocumentCreatedUserRole = Qt.UserRole + 5
+    DocumentIconRole        = Qt.UserRole + 6
+    DocumentIsImageRole     = Qt.UserRole + 7
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -70,12 +71,13 @@ class DocumentModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
-            self.DocumentPathRole:    b'DocumentPath',
-            self.DocumentNameRole:    b'DocumentName',
-            self.DocumentTypeRole:    b'DocumentType',
-            self.DocumentCreatedTime: b'DocumentCreatedTime',
-            self.DocumentCreatedUser: b'DocumentCreatedUser',
-            self.DocumentIconRole:    b'DocumentIcon'
+            self.DocumentPathRole:        b'DocumentPath',
+            self.DocumentNameRole:        b'DocumentName',
+            self.DocumentTypeRole:        b'DocumentType',
+            self.DocumentCreatedTimeRole: b'DocumentCreatedTime',
+            self.DocumentCreatedUserRole: b'DocumentCreatedUser',
+            self.DocumentIconRole:        b'DocumentIcon',
+            self.DocumentIsImageRole:     b'DocumentIsImage'
         }
 
     def _updateData(self):
@@ -109,12 +111,13 @@ class DocumentModel(QAbstractTableModel):
               icon_name = mime_type.iconName()
               break
 
-          self._file_list.append({ self.DocumentPathRole: file_info.filePath(),
-                                   self.DocumentNameRole: file_info.fileName(),
-                                   self.DocumentTypeRole: mime_type_name,
-                                   self.DocumentCreatedTime: file_info.created(),
-                                   self.DocumentCreatedUser: getpass.getuser(),
-                                   self.DocumentIconRole: icon_name
+          self._file_list.append({ self.DocumentPathRole:        file_info.filePath(),
+                                   self.DocumentNameRole:        file_info.fileName(),
+                                   self.DocumentTypeRole:        mime_type_name,
+                                   self.DocumentCreatedTimeRole: file_info.created(),
+                                   self.DocumentCreatedUserRole: getpass.getuser(),
+                                   self.DocumentIconRole:        icon_name,
+                                   self.DocumentIsImageRole:     mime_type_name.startswith("image/")
                                  })
 
         self.endResetModel()

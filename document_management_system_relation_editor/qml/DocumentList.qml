@@ -1,6 +1,5 @@
 import QtQuick 2.10
 import QtQuick.Controls 2.5
-import QtQuick.Layouts 1.1
 
 Item {
 
@@ -31,7 +30,6 @@ Item {
 
             onToggled: button_ListView.checked = !button_IconView.checked
         }
-
         Button {
             id: button_ListView
             anchors.right: button_IconView.left
@@ -56,16 +54,21 @@ Item {
 
         Button {
             id: button_RemoveDocument
-            text: qsTr("Remove document")
             anchors.right: rectangle_Footer.right
             anchors.verticalCenter: parent.verticalCenter
+            action: action_RemoveDocument
         }
-
         Button {
             id: button_AddDocument
-            text: qsTr("Add document")
             anchors.right: button_RemoveDocument.left
             anchors.verticalCenter: parent.verticalCenter
+            action: action_AddDocument
+        }
+        Button {
+            id: button_ShowForm
+            anchors.right: button_AddDocument.left
+            anchors.verticalCenter: parent.verticalCenter
+            action: action_ShowForm
         }
     }
 
@@ -83,7 +86,7 @@ Item {
         delegate: Component {
             Item
             {
-                width: parent.width
+                width: listView.width
                 height: textDocumentName.height
 
                 Button {
@@ -97,7 +100,7 @@ Item {
                 Text {
                     id: textDocumentName
                     anchors.left: buttonIcon.right
-                    text: DocumentName
+                    text: DocumentName + DocumentIsImage
                 }
 
                 ToolTip {
@@ -110,8 +113,8 @@ Item {
 
                         Image {
                             height: column_Names.height
-                            visible: true
-                            source: DocumentPath
+                            visible: DocumentIsImage
+                            source: DocumentIsImage ? DocumentPath : ""
                             fillMode: Image.PreserveAspectFit
                         }
 
@@ -198,8 +201,6 @@ Item {
                 width: gridView.cellWidth
                 height: gridView.cellHeight
 
-                property bool isImage: DocumentType === "image/jpeg"
-
                 Column {
                     anchors.fill: parent
 
@@ -208,16 +209,18 @@ Item {
                         width: parent.width
                         height: 60
                         anchors.horizontalCenter: parent.horizontalCenter
-                        visible: !item_Delegate.isImage
+                        visible: !DocumentIsImage
                         flat: true
                         icon.name: DocumentIcon
+                        icon.height: height
+                        icon.width: height
                     }
                     Image {
                         width: parent.width
                         height: 60
                         anchors.horizontalCenter: parent.horizontalCenter
-                        visible: item_Delegate.isImage
-                        source: DocumentPath
+                        visible: DocumentIsImage
+                        source: DocumentIsImage ? DocumentPath : ""
                         fillMode: Image.PreserveAspectFit
                     }
                     Text {
@@ -240,8 +243,8 @@ Item {
 
                         Image {
                             height: column_Names.height
-                            visible: true
-                            source: DocumentPath
+                            visible: DocumentIsImage
+                            source: DocumentIsImage ? DocumentPath : ""
                             fillMode: Image.PreserveAspectFit
                         }
 
@@ -308,15 +311,36 @@ Item {
         }
     } // GridView
 
+    Action {
+        id: action_AddDocument
+        text: qsTr("Add document")
+//        icon.name: qgsApplicationInstance.activeThemePath + "/symbologyAdd.svg"
+//        icon.name: qgsApplicationInstance.defaultThemePath + "/symbologyAdd.svg"
+        // icon.name: themePath + "/symbologyAdd.svg"
+        //        icon.name: ":/images/themes/default/symbologyAdd.svg"
+        icon.name: parent.getPath("/symbologyAdd.svg")
+        onTriggered: addDocument()
+    }
+    Action {
+        id: action_RemoveDocument
+        text: "Remove document"
+        icon.name: ":/images/themes/default/symbologyRemove.svg"
+        onTriggered: removeDocument()
+    }
+    Action {
+        id: action_ShowForm
+        text: "Show form"
+        icon.name: ":/images/themes/default/mActionMultiEdit.svg"
+        onTriggered: showForm()
+    }
+
     Menu {
         id: contextMenu
         MenuItem {
-            text: "Show form"
-            onTriggered: showForm()
+            action: action_ShowForm
         }
         MenuItem {
-            text: "Remove link"
-            onTriggered: removeLink()
+            action: action_RemoveDocument
         }
     }
 
