@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------
 #
-# QGIS Ordered Relation Editor Plugin
-# Copyright (C) 2020 Denis Rouzaud
+# QGIS Document Management System Plugin
+# Copyright (C) 2021 Damiano Lombardi
 #
 # licensed under the terms of GNU GPL 2+
 #

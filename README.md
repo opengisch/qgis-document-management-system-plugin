@@ -1,1 +1,1 @@
-## Document Management System Relation Editor plugin for QGIS
+## Document Management System plugin for QGIS
