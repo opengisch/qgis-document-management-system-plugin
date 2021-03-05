@@ -53,10 +53,8 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
         layout = QVBoxLayout()
         self.view = QQuickWidget()
-        self.view.rootContext().setContextProperty("parent", self)
-        self.view.rootContext().setContextProperty("qgsApplicationInstance", QgsApplication.instance())
-        self.view.rootContext().setContextProperty("themePath", QgsApplication.defaultThemePath())
         self.view.rootContext().setContextProperty("documentModel", self.model)
+        self.view.rootContext().setContextProperty("parentWidget", self)
         self.view.setSource(QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), '../qml/DocumentList.qml')))
         self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
         layout.addWidget(self.view)
@@ -74,6 +72,19 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         print('updateUi')
         self.model.init(self.relation(), self.feature(), self.document_path)
 
-    @pyqtSlot(str)
-    def getPath(self, iconName):
-      return QgsApplication.getThemeIcon(iconName)
+    @pyqtSlot(str, result=str)
+    def getThemeIcon(self, iconName):
+
+      theme_path = QgsApplication.activeThemePath()
+      print("theme_path", theme_path)
+      if not theme_path:
+          theme_path = QgsApplication.defaultThemePath()
+
+      print("theme_path", theme_path)
+
+      if not theme_path:
+          return ""
+
+      print("theme_path + QDir.separator() + iconName", theme_path + iconName)
+
+      return theme_path + iconName

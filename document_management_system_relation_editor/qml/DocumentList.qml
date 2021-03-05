@@ -1,15 +1,20 @@
 import QtQuick 2.10
 import QtQuick.Controls 2.5
+import QtQuick.Dialogs 1.1
 
 Item {
+
+    SystemPalette {
+        id: myPalette;
+        colorGroup: SystemPalette.Active
+    }
 
     Rectangle {
         id: rectangle_Header
         width: parent.width
-        height: 40
+        height: button_IconView.height
         z: 1
-        color: "lightgray"
-        border.color: "purple"
+        color: myPalette.window
 
         Text {
             id: text_Title
@@ -19,12 +24,12 @@ Item {
             text: qsTr("Documents:")
         }
 
-
         Button {
             id: button_IconView
             anchors.right: rectangle_Header.right
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Icon view")
+            icon.name: ":/images/themes/default/mActionIconView.svg"
             checkable: true
             checked: false
 
@@ -35,6 +40,7 @@ Item {
             anchors.right: button_IconView.left
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("List view")
+            icon.name: ":/images/themes/default/mIconListView.svg"
             checkable: true
             checked: true
 
@@ -42,15 +48,13 @@ Item {
         }
     }
 
-
     Rectangle {
         id: rectangle_Footer
         width: parent.width
-        height: 40
+        height: button_RemoveDocument.height
         anchors.bottom: parent.bottom
         z: 1
-        color: "lightgray"
-        border.color: "cyan"
+        color: myPalette.window
 
         Button {
             id: button_RemoveDocument
@@ -82,12 +86,17 @@ Item {
         focus: true
         model: documentModel
         highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+        ScrollBar.vertical: ScrollBar {
+            active: true
+        }
 
         delegate: Component {
             Item
             {
                 width: listView.width
                 height: textDocumentName.height
+
+                property string documentPath: DocumentPath
 
                 Button {
                     id: buttonIcon
@@ -193,6 +202,9 @@ Item {
         cellWidth: 100
         cellHeight: 140
         highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+        ScrollBar.vertical: ScrollBar {
+            active: true
+        }
 
         delegate: Component {
             Item
@@ -201,9 +213,10 @@ Item {
                 width: gridView.cellWidth
                 height: gridView.cellHeight
 
+                property string documentPath: DocumentPath
+
                 Column {
                     anchors.fill: parent
-
 
                     Button {
                         width: parent.width
@@ -314,24 +327,48 @@ Item {
     Action {
         id: action_AddDocument
         text: qsTr("Add document")
-//        icon.name: qgsApplicationInstance.activeThemePath + "/symbologyAdd.svg"
-//        icon.name: qgsApplicationInstance.defaultThemePath + "/symbologyAdd.svg"
-        // icon.name: themePath + "/symbologyAdd.svg"
-        //        icon.name: ":/images/themes/default/symbologyAdd.svg"
-        icon.name: parent.getPath("/symbologyAdd.svg")
-        onTriggered: addDocument()
+        icon.name: ":/images/themes/default/symbologyAdd.svg"
+        onTriggered: {
+            console.log("action_AddDocument:",
+                        qgsApplicationInstance.getThemeIcon("/symbologyAdd.svg"))
+        }
+
     }
     Action {
         id: action_RemoveDocument
         text: "Remove document"
         icon.name: ":/images/themes/default/symbologyRemove.svg"
-        onTriggered: removeDocument()
+        onTriggered: {
+            var selectedDocumentPath = getSelectedDocumentPath();
+
+            if (selectedDocumentPath.length === 0)
+            {
+                messageDialog.title = qsTr("No document selected");
+                messageDialog.text = qsTr("Please select a document to remove.");
+                messageDialog.open();
+                return;
+            }
+
+            console.log("selectedDocumentPath:" , selectedDocumentPath);
+        }
     }
     Action {
         id: action_ShowForm
         text: "Show form"
         icon.name: ":/images/themes/default/mActionMultiEdit.svg"
-        onTriggered: showForm()
+        onTriggered:  {
+            var selectedDocumentPath = getSelectedDocumentPath();
+
+            if (selectedDocumentPath.length === 0)
+            {
+                messageDialog.title = qsTr("No document selected");
+                messageDialog.text = qsTr("Please select a document first.");
+                messageDialog.open();
+                return;
+            }
+
+            console.log("selectedDocumentPath:" , selectedDocumentPath);
+        }
     }
 
     Menu {
@@ -358,6 +395,26 @@ Item {
         }
       }
     } // DropArea
+
+    MessageDialog {
+        id: messageDialog
+    }
+
+    function getSelectedDocumentPath()
+    {
+        if (listView.visible)
+        {
+            if(listView.currentItem)
+                return listView.currentItem.documentPath;
+        }
+        else
+        {
+            if(gridView.currentItem)
+                return gridView.currentItem.documentPath;
+        }
+
+        return "";
+    }
 }
 
 

@@ -12,7 +12,7 @@ from enum import Enum
 import getpass
 from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QDir, QMimeDatabase
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication
+from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication, QgsExpressionContextUtils
 
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
@@ -84,19 +84,19 @@ class DocumentModel(QAbstractTableModel):
         self.beginResetModel()
         self._file_list = []
 
-#        self._file_list.append("Valid relation: {} Valid feature: {}".format(self._relation.isValid(), self._feature.isValid()))
+        if self._relation.isValid() and self._feature.isValid():
+            request = self._relation.getRelatedFeaturesRequest(self._feature)
+            for feature in self._relation.referencingLayer().getFeatures(request):
+                print(feature)
+                for attribute in feature:
+                    print(attribute)
 
-#        if self._relation.isValid() and self._feature.isValid():
-#            request = self._relation.getRelatedFeaturesRequest(self._feature)
-#            for f in self._relation.referencingLayer().getFeatures(request):
-#                self._file_list.append("f")
-                #self._related_features.append(f)
-
-#            self._file_list.append("b")
-
-#        exp = QgsExpression(self._document_path)
-#        context = QgsExpressionContext()
-#        expression_result = exp.evaluate(context)
+                exp = QgsExpression(self._document_path)
+                context = QgsExpressionContext()
+                context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(self._relation.referencingLayer()))
+                context.setFeature(feature)
+                expression_result = exp.evaluate(context)
+                print("Expression:", self._document_path, "Result:", expression_result)
 
         file_info_list = QDir("/home/domi").entryInfoList(['*'], QDir.Files)
 
