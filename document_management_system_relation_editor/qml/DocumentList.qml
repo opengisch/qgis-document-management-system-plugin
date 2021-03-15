@@ -51,20 +51,26 @@ Item {
     Rectangle {
         id: rectangle_Footer
         width: parent.width
-        height: button_RemoveDocument.height
+        height: button_UnlinkDocument.height
         anchors.bottom: parent.bottom
         z: 1
         color: myPalette.window
 
         Button {
-            id: button_RemoveDocument
+            id: button_UnlinkDocument
             anchors.right: rectangle_Footer.right
             anchors.verticalCenter: parent.verticalCenter
-            action: action_RemoveDocument
+            action: action_UnlinkDocument
+        }
+        Button {
+            id: button_LinkDocument
+            anchors.right: button_UnlinkDocument.left
+            anchors.verticalCenter: parent.verticalCenter
+            action: action_LinkDocument
         }
         Button {
             id: button_AddDocument
-            anchors.right: button_RemoveDocument.left
+            anchors.right: button_LinkDocument.left
             anchors.verticalCenter: parent.verticalCenter
             action: action_AddDocument
         }
@@ -96,6 +102,7 @@ Item {
                 width: listView.width
                 height: textDocumentName.height
 
+                property int documentId: DocumentId
                 property string documentPath: DocumentPath
 
                 Button {
@@ -103,13 +110,15 @@ Item {
                     width: parent.height
                     height: parent.height
                     flat: true
-                    icon.name: DocumentIcon
+                    icon.name: DocumentExists == false ? ":/images/composer/missing_image.svg"
+                                                       : DocumentIcon == "" ? ":/images/themes/default/mIconFile.svg"
+                                                                            : DocumentIcon
                 }
 
                 Text {
                     id: textDocumentName
                     anchors.left: buttonIcon.right
-                    text: DocumentName + DocumentIsImage
+                    text: DocumentName
                 }
 
                 ToolTip {
@@ -117,58 +126,14 @@ Item {
                     visible: mouseArea.containsMouse
                     delay: 1000
 
-                    contentItem: Row{
-                        spacing: 5
+                    contentItem: Loader {
+                        sourceComponent: component_ToolTip;
 
-                        Image {
-                            height: column_Names.height
-                            visible: DocumentIsImage
-                            source: DocumentIsImage ? DocumentPath : ""
-                            fillMode: Image.PreserveAspectFit
-                        }
-
-                        Column {
-                            id: column_Names
-                            Text {
-                                color: "white"
-                                text: qsTr("Path:")
-                            }
-                            Text {
-                                color: "white"
-                                text: qsTr("Type:")
-                            }
-                            Text {
-                                color: "white"
-                                text: qsTr("Created on:")
-                            }
-                            Text {
-                                color: "white"
-                                text: qsTr("Created by:")
-                            }
-                        }
-
-                        Column {
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentPath
-                                text: DocumentPath ? DocumentPath : "<Unknown>"
-                            }
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentType
-                                text: DocumentType ? DocumentType : "<Unknown>"
-                            }
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentCreatedTime
-                                text: DocumentCreatedTime ? DocumentCreatedTime : "<Unknown>"
-                            }
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentCreatedUser
-                                text: DocumentCreatedUser ? DocumentCreatedUser : "<Unknown>"
-                            }
-                        }
+                        property string documentPath: DocumentPath
+                        property string documentType: DocumentType
+                        property string documentCreatedTime: DocumentCreatedTime
+                        property string documentCreatedUser: DocumentCreatedUser
+                        property bool documentIsImage: DocumentIsImage
                     }
                 }
 
@@ -184,7 +149,9 @@ Item {
                             contextMenu.popup()
 
                     }
-                    onDoubleClicked: Qt.openUrlExternally(DocumentPath);
+                    onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
+                                                    : showMessageDialog(qsTr("Inexisting document"),
+                                                                        qsTr("Document '%1' does't exists.").arg(DocumentPath));
                 }
             }
         }
@@ -213,6 +180,7 @@ Item {
                 width: gridView.cellWidth
                 height: gridView.cellHeight
 
+                property int documentId: DocumentId
                 property string documentPath: DocumentPath
 
                 Column {
@@ -224,7 +192,9 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: !DocumentIsImage
                         flat: true
-                        icon.name: DocumentIcon
+                        icon.name: DocumentExists == false ? ":/images/composer/missing_image.svg"
+                                                           : DocumentIcon == "" ? ":/images/themes/default/mIconFile.svg"
+                                                                                : DocumentIcon
                         icon.height: height
                         icon.width: height
                     }
@@ -251,58 +221,14 @@ Item {
                     visible: mouseArea.containsMouse
                     delay: 1000
 
-                    contentItem: Row{
-                        spacing: 5
+                    contentItem: Loader {
+                        sourceComponent: component_ToolTip;
 
-                        Image {
-                            height: column_Names.height
-                            visible: DocumentIsImage
-                            source: DocumentIsImage ? DocumentPath : ""
-                            fillMode: Image.PreserveAspectFit
-                        }
-
-                        Column {
-                            id: column_Names
-                            Text {
-                                color: "white"
-                                text: qsTr("Path:")
-                            }
-                            Text {
-                                color: "white"
-                                text: qsTr("Type:")
-                            }
-                            Text {
-                                color: "white"
-                                text: qsTr("Created on:")
-                            }
-                            Text {
-                                color: "white"
-                                text: qsTr("Created by:")
-                            }
-                        }
-
-                        Column {
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentPath
-                                text: DocumentPath ? DocumentPath : "<Unknown>"
-                            }
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentType
-                                text: DocumentType ? DocumentType : "<Unknown>"
-                            }
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentCreatedTime
-                                text: DocumentCreatedTime ? DocumentCreatedTime : "<Unknown>"
-                            }
-                            Text {
-                                color: "white"
-                                font.italic: !DocumentCreatedUser
-                                text: DocumentCreatedUser ? DocumentCreatedUser : "<Unknown>"
-                            }
-                        }
+                        property string documentPath: DocumentPath
+                        property string documentType: DocumentType
+                        property string documentCreatedTime: DocumentCreatedTime
+                        property string documentCreatedUser: DocumentCreatedUser
+                        property bool documentIsImage: DocumentIsImage
                     }
                 }
 
@@ -316,40 +242,100 @@ Item {
 
                         if(mouse.button == Qt.RightButton)
                             contextMenu.popup()
-
                     }
-                    onDoubleClicked: Qt.openUrlExternally(DocumentPath);
+                    onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
+                                                    : showMessageDialog(qsTr("Inexisting document"),
+                                                                        qsTr("Document '%1' does't exists.").arg(DocumentPath));
                 }
             }
         }
     } // GridView
+
+    Component {
+        id: component_ToolTip
+
+        Row {
+            spacing: 5
+
+            Image {
+                height: grid_Names.height
+                visible: documentIsImage
+                source: documentIsImage ? documentPath : ""
+                fillMode: Image.PreserveAspectFit
+            }
+
+            Grid {
+                id: grid_Names
+                columns: 2
+                spacing: 5
+
+                // Row 1
+                Text {
+                    text: qsTr("Path:")
+                }
+                Text {
+                    font.italic: !documentPath
+                    text: documentPath ? documentPath : "<Unknown>"
+                }
+                // Row 2
+                Text {
+                    text: qsTr("Type:")
+                }
+                Text {
+                    font.italic: !documentType
+                    text: documentType ? documentType : "<Unknown>"
+                }
+                // Row 3
+                Text {
+                    text: qsTr("Created on:")
+                }
+                Text {
+                    font.italic: !documentCreatedTime
+                    text: documentCreatedTime ? documentCreatedTime : "<Unknown>"
+                }
+                // Row 4
+                Text {
+                    text: qsTr("Created by:")
+                }
+                Text {
+                    font.italic: !documentCreatedUser
+                    text: documentCreatedUser ? documentCreatedUser : "<Unknown>"
+                }
+            }
+        }
+    } // component_ToolTip
 
     Action {
         id: action_AddDocument
         text: qsTr("Add document")
         icon.name: ":/images/themes/default/symbologyAdd.svg"
         onTriggered: {
-            console.log("action_AddDocument:",
-                        qgsApplicationInstance.getThemeIcon("/symbologyAdd.svg"))
+            parentWidget.addDocument()
         }
-
     }
     Action {
-        id: action_RemoveDocument
-        text: "Remove document"
-        icon.name: ":/images/themes/default/symbologyRemove.svg"
+        id: action_LinkDocument
+        text: qsTr("Link document")
+        icon.name: ":/images/themes/default/mActionLink.svg"
         onTriggered: {
-            var selectedDocumentPath = getSelectedDocumentPath();
+            parentWidget.linkDocument()
+        }
+    }
+    Action {
+        id: action_UnlinkDocument
+        text: "Unlink document"
+        icon.name: ":/images/themes/default/mActionUnlink.svg"
+        onTriggered: {
+            var selectedDocumentId = getSelectedDocumentId();
 
-            if (selectedDocumentPath.length === 0)
+            if (selectedDocumentId < 0)
             {
-                messageDialog.title = qsTr("No document selected");
-                messageDialog.text = qsTr("Please select a document to remove.");
-                messageDialog.open();
+                showMessageDialog(qsTr("No document selected"),
+                                  qsTr("Please select a document to remove."));
                 return;
             }
 
-            console.log("selectedDocumentPath:" , selectedDocumentPath);
+            parentWidget.unlinkDocument(selectedDocumentId);
         }
     }
     Action {
@@ -361,9 +347,8 @@ Item {
 
             if (selectedDocumentPath.length === 0)
             {
-                messageDialog.title = qsTr("No document selected");
-                messageDialog.text = qsTr("Please select a document first.");
-                messageDialog.open();
+                showMessageDialog(qsTr("No document selected"),
+                                  qsTr("Please select a document first."));
                 return;
             }
 
@@ -377,7 +362,7 @@ Item {
             action: action_ShowForm
         }
         MenuItem {
-            action: action_RemoveDocument
+            action: action_UnlinkDocument
         }
     }
 
@@ -400,6 +385,13 @@ Item {
         id: messageDialog
     }
 
+    function showMessageDialog(title, text)
+    {
+        messageDialog.title = title;
+        messageDialog.text = text;
+        messageDialog.open();
+    }
+
     function getSelectedDocumentPath()
     {
         if (listView.visible)
@@ -414,6 +406,22 @@ Item {
         }
 
         return "";
+    }
+
+    function getSelectedDocumentId()
+    {
+        if (listView.visible)
+        {
+            if(listView.currentItem)
+                return listView.currentItem.documentId;
+        }
+        else
+        {
+            if(gridView.currentItem)
+                return gridView.currentItem.documentId;
+        }
+
+        return -1;
     }
 }
 

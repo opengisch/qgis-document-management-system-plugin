@@ -10,7 +10,7 @@
 
 from enum import Enum
 import getpass
-from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QDir, QMimeDatabase
+from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication, QgsExpressionContextUtils
 
@@ -23,29 +23,31 @@ class Role(Enum):
 
 class DocumentModel(QAbstractTableModel):
 
-    DocumentPathRole        = Qt.UserRole + 1
-    DocumentNameRole        = Qt.UserRole + 2
-    DocumentTypeRole        = Qt.UserRole + 3
-    DocumentCreatedTimeRole = Qt.UserRole + 4
-    DocumentCreatedUserRole = Qt.UserRole + 5
-    DocumentIconRole        = Qt.UserRole + 6
-    DocumentIsImageRole     = Qt.UserRole + 7
+    DocumentIdRole          = Qt.UserRole + 1
+    DocumentPathRole        = Qt.UserRole + 2
+    DocumentNameRole        = Qt.UserRole + 3
+    DocumentExistsRole      = Qt.UserRole + 4
+    DocumentTypeRole        = Qt.UserRole + 5
+    DocumentCreatedTimeRole = Qt.UserRole + 6
+    DocumentCreatedUserRole = Qt.UserRole + 7
+    DocumentIconRole        = Qt.UserRole + 8
+    DocumentIsImageRole     = Qt.UserRole + 9
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
         self._relation = QgsRelation()
         self._document_path = str()
         self._feature = QgsFeature()
-        self._file_list = []
+        self._document_list = []
 
     def init(self, relation: QgsRelation, feature: QgsFeature, document_path: str):
         self._relation = relation
         self._document_path = document_path
         self._feature = feature
-        self._updateData()
+        self.reloadData()
 
     def rowCount(self, parent: QModelIndex = ...) -> int:
-        return len(self._file_list)
+        return len(self._document_list)
 
     def columnCount(self, parent: QModelIndex = ...) -> int:
         return 1
@@ -61,7 +63,7 @@ class DocumentModel(QAbstractTableModel):
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
             return None
 
-        return self._file_list[ index.row() ][ role ]
+        return self._document_list[ index.row() ][ role ]
 
     def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
@@ -71,8 +73,10 @@ class DocumentModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
+            self.DocumentIdRole:          b'DocumentId',
             self.DocumentPathRole:        b'DocumentPath',
             self.DocumentNameRole:        b'DocumentName',
+            self.DocumentExistsRole:      b'DocumentExists',
             self.DocumentTypeRole:        b'DocumentType',
             self.DocumentCreatedTimeRole: b'DocumentCreatedTime',
             self.DocumentCreatedUserRole: b'DocumentCreatedUser',
@@ -80,45 +84,43 @@ class DocumentModel(QAbstractTableModel):
             self.DocumentIsImageRole:     b'DocumentIsImage'
         }
 
-    def _updateData(self):
+    def reloadData(self):
         self.beginResetModel()
-        self._file_list = []
+        self._document_list = []
 
-        if self._relation.isValid() and self._feature.isValid():
-            request = self._relation.getRelatedFeaturesRequest(self._feature)
-            for feature in self._relation.referencingLayer().getFeatures(request):
-                print(feature)
-                for attribute in feature:
-                    print(attribute)
-
-                exp = QgsExpression(self._document_path)
-                context = QgsExpressionContext()
-                context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(self._relation.referencingLayer()))
-                context.setFeature(feature)
-                expression_result = exp.evaluate(context)
-                print("Expression:", self._document_path, "Result:", expression_result)
-
-        file_info_list = QDir("/home/domi").entryInfoList(['*'], QDir.Files)
+        if self._relation.isValid() == False or self._feature.isValid() == False:
+            self.endResetModel()
+            return
 
         mime_database = QMimeDatabase()
-        for file_info in file_info_list:
-          mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
-          mime_type_name = str()
-          icon_name = str()
-          for mime_type in mime_types:
-            mime_type_name = mime_type.name()
-            if mime_type:
-              icon_name = mime_type.iconName()
-              break
+        request = self._relation.getRelatedFeaturesRequest(self._feature)
+        for feature in self._relation.referencingLayer().getFeatures(request):
+            exp = QgsExpression(self._document_path)
+            context = QgsExpressionContext()
+            context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(self._relation.referencingLayer()))
+            context.setFeature(feature)
+            expression_result = exp.evaluate(context)
+            file_info = QFileInfo(expression_result)
 
-          self._file_list.append({ self.DocumentPathRole:        file_info.filePath(),
-                                   self.DocumentNameRole:        file_info.fileName(),
-                                   self.DocumentTypeRole:        mime_type_name,
-                                   self.DocumentCreatedTimeRole: file_info.created(),
-                                   self.DocumentCreatedUserRole: getpass.getuser(),
-                                   self.DocumentIconRole:        icon_name,
-                                   self.DocumentIsImageRole:     mime_type_name.startswith("image/")
-                                 })
+            mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
+            mime_type_name = str()
+            icon_name = str()
+            for mime_type in mime_types:
+                if mime_type:
+                    mime_type_name = mime_type.name()
+                    icon_name = mime_type.iconName()
+                    break
+
+            self._document_list.append({ self.DocumentIdRole:          feature.id(),
+                                         self.DocumentPathRole:        file_info.filePath(),
+                                         self.DocumentNameRole:        file_info.fileName(),
+                                         self.DocumentExistsRole:      file_info.exists(),
+                                         self.DocumentTypeRole:        mime_type_name,
+                                         self.DocumentCreatedTimeRole: file_info.created(),
+                                         self.DocumentCreatedUserRole: getpass.getuser(),
+                                         self.DocumentIconRole:        icon_name,
+                                         self.DocumentIsImageRole:     mime_type_name.startswith("image/")
+                                       })
 
         self.endResetModel()
 
