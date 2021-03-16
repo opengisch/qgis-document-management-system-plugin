@@ -133,6 +133,7 @@ Item {
                         property string documentType: DocumentType
                         property string documentCreatedTime: DocumentCreatedTime
                         property string documentCreatedUser: DocumentCreatedUser
+                        property bool documentExists: DocumentExists
                         property bool documentIsImage: DocumentIsImage
                     }
                 }
@@ -203,7 +204,9 @@ Item {
                         height: 60
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: DocumentIsImage
-                        source: DocumentIsImage ? DocumentPath : ""
+                        source: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
+                                                        : DocumentIsImage ? DocumentPath
+                                                                          : ""
                         fillMode: Image.PreserveAspectFit
                     }
                     Text {
@@ -228,6 +231,7 @@ Item {
                         property string documentType: DocumentType
                         property string documentCreatedTime: DocumentCreatedTime
                         property string documentCreatedUser: DocumentCreatedUser
+                        property bool documentExists: DocumentExists
                         property bool documentIsImage: DocumentIsImage
                     }
                 }
@@ -260,7 +264,9 @@ Item {
             Image {
                 height: grid_Names.height
                 visible: documentIsImage
-                source: documentIsImage ? documentPath : ""
+                source: documentExists == false ? "qrc:///images/composer/missing_image.svg"
+                                                : documentIsImage ? documentPath
+                                                                  : ""
                 fillMode: Image.PreserveAspectFit
             }
 
@@ -330,7 +336,7 @@ Item {
             if (selectedDocumentId < 0)
             {
                 showMessageDialog(qsTr("No document selected"),
-                                  qsTr("Please select a document to remove."));
+                                  qsTr("Please select a document to unlink."));
                 return;
             }
             parentWidget.unlinkDocument(selectedDocumentId);
@@ -345,7 +351,7 @@ Item {
             if (selectedDocumentId < 0)
             {
                 showMessageDialog(qsTr("No document selected"),
-                                  qsTr("Please select a document to remove."));
+                                  qsTr("Please select a document first."));
                 return;
             }
             parentWidget.showDocumentForm(selectedDocumentId);

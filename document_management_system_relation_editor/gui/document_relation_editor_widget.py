@@ -11,7 +11,7 @@
 from PyQt5.QtQuickWidgets import QQuickWidget
 import os
 from qgis.PyQt.QtCore import QUrl, QObject, pyqtSignal, pyqtProperty, pyqtSlot
-from qgis.PyQt.QtWidgets import QVBoxLayout, QFileDialog
+from qgis.PyQt.QtWidgets import QVBoxLayout
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsApplication
 from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
@@ -54,13 +54,7 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
     @pyqtSlot()
     def addDocument(self):
-
-        file_name = QFileDialog.getOpenFileName(self,
-                                                self.tr("Add file"))
-        if not file_name:
-          return
-
-        print("file_name", file_name)
+        super(DocumentRelationEditorWidget, self).addFeature()
 
         # WORKAROUND: remove by qgis version > 3.18
         self.updateUi()
