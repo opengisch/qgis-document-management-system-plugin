@@ -327,14 +327,12 @@ Item {
         icon.name: ":/images/themes/default/mActionUnlink.svg"
         onTriggered: {
             var selectedDocumentId = getSelectedDocumentId();
-
             if (selectedDocumentId < 0)
             {
                 showMessageDialog(qsTr("No document selected"),
                                   qsTr("Please select a document to remove."));
                 return;
             }
-
             parentWidget.unlinkDocument(selectedDocumentId);
         }
     }
@@ -343,16 +341,14 @@ Item {
         text: "Show form"
         icon.name: ":/images/themes/default/mActionMultiEdit.svg"
         onTriggered:  {
-            var selectedDocumentPath = getSelectedDocumentPath();
-
-            if (selectedDocumentPath.length === 0)
+            var selectedDocumentId = getSelectedDocumentId();
+            if (selectedDocumentId < 0)
             {
                 showMessageDialog(qsTr("No document selected"),
-                                  qsTr("Please select a document first."));
+                                  qsTr("Please select a document to remove."));
                 return;
             }
-
-            console.log("selectedDocumentPath:" , selectedDocumentPath);
+            parentWidget.showDocumentForm(selectedDocumentId);
         }
     }
 

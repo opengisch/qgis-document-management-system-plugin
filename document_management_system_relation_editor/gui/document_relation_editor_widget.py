@@ -14,7 +14,7 @@ from qgis.PyQt.QtCore import QUrl, QObject, pyqtSignal, pyqtProperty, pyqtSlot
 from qgis.PyQt.QtWidgets import QVBoxLayout, QFileDialog
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsApplication
-from qgis.gui import QgsAbstractRelationEditorWidget
+from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
 from document_management_system_relation_editor.core.document_model import DocumentModel
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_widget.ui'))
@@ -74,5 +74,15 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         super(DocumentRelationEditorWidget, self).unlinkFeature(documentId)
 
         # WORKAROUND: remove by qgis version > 3.18
+        self.updateUi()
+
+    @pyqtSlot(int)
+    def showDocumentForm(self, documentId):
+        showDocumentFormDialog = QgsAttributeDialog(self.relation().referencingLayer(),
+                                                    self.relation().referencingLayer().getFeature(documentId),
+                                                    False,
+                                                    self,
+                                                    True)
+        showDocumentFormDialog.exec()
         self.updateUi()
 
