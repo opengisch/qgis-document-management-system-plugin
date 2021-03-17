@@ -13,7 +13,7 @@ import os
 from qgis.PyQt.QtCore import QUrl, QObject, pyqtSignal, pyqtProperty, pyqtSlot
 from qgis.PyQt.QtWidgets import QVBoxLayout
 from qgis.PyQt.uic import loadUiType
-from qgis.core import QgsApplication
+from qgis.core import QgsApplication, QgsProject, QgsRelation
 from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
 from document_management_system_relation_editor.core.document_model import DocumentModel
 
@@ -31,6 +31,8 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
         self.model = DocumentModel()
 
+        self._nmRelation = QgsRelation()
+
         layout = QVBoxLayout()
         self.view = QQuickWidget()
         self.view.rootContext().setContextProperty("documentModel", self.model)
@@ -39,6 +41,9 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
         layout.addWidget(self.view)
         self.setLayout(layout)
+
+    def nmRelation(self):
+        return self._nmRelation
 
     def config(self):
         return {
@@ -49,34 +54,47 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         self.document_path = config['document_path']
 
     def updateUi(self):
-        print("updateUi")
-        self.model.init(self.relation(), self.feature(), self.document_path)
+        self.model.init(self.relation(), self.nmRelation(), self.feature(), self.document_path)
+
+    def afterSetRelations(self):
+        self._nmRelation = QgsProject.instance().relationManager().relation( self.nmRelationId() )
 
     @pyqtSlot()
     def addDocument(self):
-        super(DocumentRelationEditorWidget, self).addFeature()
+        self.addFeature()
 
         # WORKAROUND: remove by qgis version > 3.18
-        self.updateUi()
+        if not self.nmRelation():
+          self.updateUi()
 
     @pyqtSlot()
     def linkDocument(self):
-      super(DocumentRelationEditorWidget, self).linkFeature()
+      self.linkFeature()
 
     @pyqtSlot(int)
     def unlinkDocument(self, documentId):
-        super(DocumentRelationEditorWidget, self).unlinkFeature(documentId)
+        self.unlinkFeature(documentId)
 
         # WORKAROUND: remove by qgis version > 3.18
-        self.updateUi()
+        if not self.nmRelation():
+          self.updateUi()
 
     @pyqtSlot(int)
     def showDocumentForm(self, documentId):
-        showDocumentFormDialog = QgsAttributeDialog(self.relation().referencingLayer(),
-                                                    self.relation().referencingLayer().getFeature(documentId),
-                                                    False,
-                                                    self,
-                                                    True)
+
+        if self.nmRelation():
+            showDocumentFormDialog = QgsAttributeDialog(self.nmRelation().referencedLayer(),
+                                                        self.nmRelation().referencedLayer().getFeature(documentId),
+                                                        False,
+                                                        self,
+                                                        True)
+        else:
+            showDocumentFormDialog = QgsAttributeDialog(self.relation().referencingLayer(),
+                                                        self.relation().referencingLayer().getFeature(documentId),
+                                                        False,
+                                                        self,
+                                                        True)
+
         showDocumentFormDialog.exec()
         self.updateUi()
 

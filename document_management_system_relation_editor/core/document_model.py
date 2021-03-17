@@ -12,7 +12,7 @@ from enum import Enum
 import getpass
 from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication, QgsExpressionContextUtils
+from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication, QgsExpressionContextUtils, QgsFeatureRequest
 
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
@@ -36,12 +36,14 @@ class DocumentModel(QAbstractTableModel):
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
         self._relation = QgsRelation()
+        self._nmRelation = QgsRelation()
         self._document_path = str()
         self._feature = QgsFeature()
         self._document_list = []
 
-    def init(self, relation: QgsRelation, feature: QgsFeature, document_path: str):
+    def init(self, relation: QgsRelation, nmRelation: QgsRelation, feature: QgsFeature, document_path: str):
         self._relation = relation
+        self._nmRelation = nmRelation
         self._document_path = document_path
         self._feature = feature
         self.reloadData()
@@ -92,12 +94,33 @@ class DocumentModel(QAbstractTableModel):
             self.endResetModel()
             return
 
-        mime_database = QMimeDatabase()
+        feature_list = []
+        layer = self._relation.referencingLayer()
         request = self._relation.getRelatedFeaturesRequest(self._feature)
-        for feature in self._relation.referencingLayer().getFeatures(request):
+        for feature in layer.getFeatures(request):
+            feature_list.append(feature)
+
+        if self._nmRelation:
+            filters = []
+            for feature in feature_list:
+                referencedFeatureRequest = self._nmRelation.getReferencedFeatureRequest( feature )
+                filterExpression = referencedFeatureRequest.filterExpression()
+                filters.append("(" + filterExpression.expression() + ")")
+
+            nmRequest = QgsFeatureRequest()
+            nmRequest.setFilterExpression(" OR ".join(filters))
+
+            feature_list = []
+            layer = self._nmRelation.referencedLayer()
+            for feature in layer.getFeatures(nmRequest):
+                feature_list.append(feature)
+
+        mime_database = QMimeDatabase()
+        for feature in feature_list:
+            print("n:m feature", feature.id(), "path:", feature["path"])
             exp = QgsExpression(self._document_path)
             context = QgsExpressionContext()
-            context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(self._relation.referencingLayer()))
+            context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
             context.setFeature(feature)
             expression_result = exp.evaluate(context)
             file_info = QFileInfo(expression_result)
