@@ -11,7 +11,7 @@
 from PyQt5.QtQuickWidgets import QQuickWidget
 import os
 from qgis.PyQt.QtCore import QUrl, QObject, pyqtSignal, pyqtProperty, pyqtSlot
-from qgis.PyQt.QtWidgets import QVBoxLayout
+from qgis.PyQt.QtWidgets import QVBoxLayout, QMessageBox
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsApplication, QgsProject, QgsRelation
 from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
@@ -25,7 +25,7 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         super().__init__(config, parent)
         self.setupUi(self)
 
-        print('__init__')
+        print('DocumentRelationEditorWidget.__init__')
 
         self.document_path = str()
 
@@ -54,47 +54,77 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         self.document_path = config['document_path']
 
     def updateUi(self):
+        print('DocumentRelationEditorWidget.updateUi')
         self.model.init(self.relation(), self.nmRelation(), self.feature(), self.document_path)
 
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation( self.nmRelationId() )
+        
+    def checkLayerEditingMode(self):
+      
+        if self.relation().referencingLayer().isEditable() == False:
+            QMessageBox.critical(self,
+                                 self.tr("Layer not editable"),
+                                 self.tr("Layer '{0}' is not in editing mode.").format(self.relation().referencingLayer().name()))
+            return False
+        
+        if self.nmRelation().isValid():
+            if self.nmRelation().referencedLayer().isEditable() == False:
+                QMessageBox.critical(self,
+                                     self.tr("Layer not editable"),
+                                     self.tr("Layer '{0}' is not in editing mode.").format(self.nmRelation().referencedLayer().name()))
+                return False
+          
+        return True
+      
 
     @pyqtSlot()
     def addDocument(self):
+        
+        if self.checkLayerEditingMode() == False:
+          return
+        
         self.addFeature()
 
         # WORKAROUND: remove by qgis version > 3.18
-        if not self.nmRelation():
+        if self.nmRelation().isValid() == False:
           self.updateUi()
 
     @pyqtSlot()
     def linkDocument(self):
-      self.linkFeature()
+        
+        if self.checkLayerEditingMode() == False:
+          return
+        
+        self.linkFeature()
 
     @pyqtSlot(int)
     def unlinkDocument(self, documentId):
+        
+        if self.checkLayerEditingMode() == False:
+          return
+        
         self.unlinkFeature(documentId)
-
+        
         # WORKAROUND: remove by qgis version > 3.18
-        if not self.nmRelation():
+        if self.nmRelation().isValid() == False:
           self.updateUi()
 
     @pyqtSlot(int)
     def showDocumentForm(self, documentId):
-
-        if self.nmRelation():
-            showDocumentFormDialog = QgsAttributeDialog(self.nmRelation().referencedLayer(),
-                                                        self.nmRelation().referencedLayer().getFeature(documentId),
-                                                        False,
-                                                        self,
-                                                        True)
-        else:
-            showDocumentFormDialog = QgsAttributeDialog(self.relation().referencingLayer(),
-                                                        self.relation().referencingLayer().getFeature(documentId),
-                                                        False,
-                                                        self,
-                                                        True)
-
+        
+        if self.checkLayerEditingMode() == False:
+          return
+        
+        layer = self.relation().referencingLayer()
+        if self.nmRelation().isValid():
+          layer = self.nmRelation().referencedLayer()
+          
+        showDocumentFormDialog = QgsAttributeDialog(layer,
+                                                    layer.getFeature(documentId),
+                                                    False,
+                                                    self,
+                                                    True)
         showDocumentFormDialog.exec()
         self.updateUi()
 
