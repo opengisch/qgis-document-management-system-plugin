@@ -88,10 +88,6 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         
         self.addFeature()
 
-        # WORKAROUND: remove by qgis version > 3.18
-        if self.nmRelation().isValid() == False:
-          self.updateUi()
-
     @pyqtSlot(str)
     def addDroppedDocument(self, filename):
 
@@ -113,10 +109,6 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
           return
         
         self.unlinkFeature(documentId)
-        
-        # WORKAROUND: remove by qgis version > 3.18
-        if self.nmRelation().isValid() == False:
-          self.updateUi()
 
     @pyqtSlot(int)
     def showDocumentForm(self, documentId):
