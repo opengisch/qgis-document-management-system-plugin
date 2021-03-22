@@ -9,7 +9,6 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-import getpass
 from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication, QgsExpressionContextUtils, QgsFeatureRequest
@@ -38,13 +37,15 @@ class DocumentModel(QAbstractTableModel):
         self._relation = QgsRelation()
         self._nmRelation = QgsRelation()
         self._document_path = str()
+        self.document_author = str()
         self._feature = QgsFeature()
         self._document_list = []
 
-    def init(self, relation: QgsRelation, nmRelation: QgsRelation, feature: QgsFeature, document_path: str):
+    def init(self, relation: QgsRelation, nmRelation: QgsRelation, feature: QgsFeature, document_path: str, document_author: str):
         self._relation = relation
         self._nmRelation = nmRelation
         self._document_path = document_path
+        self._document_author = document_author
         self._feature = feature
         self.reloadData()
 
@@ -100,7 +101,7 @@ class DocumentModel(QAbstractTableModel):
         for feature in layer.getFeatures(request):
             feature_list.append(feature)
 
-        if self._nmRelation:
+        if self._nmRelation.isValid():
             filters = []
             for feature in feature_list:
                 referencedFeatureRequest = self._nmRelation.getReferencedFeatureRequest( feature )
@@ -118,11 +119,13 @@ class DocumentModel(QAbstractTableModel):
         mime_database = QMimeDatabase()
         for feature in feature_list:
             print("n:m feature", feature.id(), "path:", feature["path"])
-            exp = QgsExpression(self._document_path)
-            context = QgsExpressionContext()
-            context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
-            context.setFeature(feature)
-            expression_result = exp.evaluate(context)
+            expression_result = str()
+            if self._document_path:
+                exp = QgsExpression(self._document_path)
+                context = QgsExpressionContext()
+                context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
+                context.setFeature(feature)
+                expression_result = exp.evaluate(context)
             file_info = QFileInfo(expression_result)
 
             mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
@@ -134,13 +137,21 @@ class DocumentModel(QAbstractTableModel):
                     icon_name = mime_type.iconName()
                     break
 
+            document_author = str()
+            if self._document_author:
+                exp = QgsExpression(self._document_author)
+                context = QgsExpressionContext()
+                context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
+                context.setFeature(feature)
+                document_author = exp.evaluate(context)
+
             self._document_list.append({ self.DocumentIdRole:          feature.id(),
                                          self.DocumentPathRole:        file_info.filePath(),
                                          self.DocumentNameRole:        file_info.fileName(),
                                          self.DocumentExistsRole:      file_info.exists(),
                                          self.DocumentTypeRole:        mime_type_name,
                                          self.DocumentCreatedTimeRole: file_info.created(),
-                                         self.DocumentCreatedUserRole: getpass.getuser(),
+                                         self.DocumentCreatedUserRole: document_author,
                                          self.DocumentIconRole:        icon_name,
                                          self.DocumentIsImageRole:     mime_type_name.startswith("image/")
                                        })

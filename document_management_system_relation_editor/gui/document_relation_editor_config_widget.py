@@ -21,13 +21,28 @@ class DocumentRelationEditorConfigWidget(QgsAbstractRelationEditorConfigWidget, 
     def __init__(self, relation, parent):
         super().__init__(relation, parent)
         self.setupUi(self)
-        self.relation = relation
         self.mDocumentPathExpressionWidget.setLayer(relation.referencingLayer())
+        self.mDocumentAuthorExpressionWidget.setLayer(relation.referencingLayer())
 
     def config(self):
         return {
-            'document_path': self.mDocumentPathExpressionWidget.currentField()[0]
+            'document_path': self.mDocumentPathExpressionWidget.currentField()[0],
+            'document_author': self.mDocumentAuthorExpressionWidget.currentField()[0]
         }
 
     def setConfig(self, config):
         self.mDocumentPathExpressionWidget.setField(config.get('document_path'))
+        self.mDocumentAuthorExpressionWidget.setField(config.get('document_author'))
+
+    def setNmRelation(self, nmRelation):
+
+        print("DocumentRelationEditorConfigWidget setNmRelation")
+
+        super().setNmRelation(nmRelation)
+
+        layer = self.relation().referencingLayer()
+        if nmRelation.isValid():
+            layer = nmRelation.referencedLayer()
+
+        self.mDocumentPathExpressionWidget.setLayer(layer)
+        self.mDocumentAuthorExpressionWidget.setLayer(layer)

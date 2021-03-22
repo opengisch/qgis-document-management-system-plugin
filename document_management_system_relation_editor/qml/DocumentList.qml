@@ -376,9 +376,8 @@ Item {
       {
         if (drop.hasUrls)
         {
-          var fileUrl = drop.urls[0];
-          textHeader.text = fileUrl;
           drop.acceptProposedAction();
+          parentWidget.addDroppedDocument(drop.urls[0])
         }
       }
     } // DropArea

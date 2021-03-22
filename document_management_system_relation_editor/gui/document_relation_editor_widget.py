@@ -28,6 +28,7 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         print('DocumentRelationEditorWidget.__init__')
 
         self.document_path = str()
+        self.document_author = str()
 
         self.model = DocumentModel()
 
@@ -51,11 +52,12 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         }
 
     def setConfig(self, config):
-        self.document_path = config['document_path']
+      self.document_path = config['document_path']
+      self.document_author = config['document_author']
 
     def updateUi(self):
         print('DocumentRelationEditorWidget.updateUi')
-        self.model.init(self.relation(), self.nmRelation(), self.feature(), self.document_path)
+        self.model.init(self.relation(), self.nmRelation(), self.feature(), self.document_path, self.document_author)
 
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation( self.nmRelationId() )
@@ -89,6 +91,12 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         # WORKAROUND: remove by qgis version > 3.18
         if self.nmRelation().isValid() == False:
           self.updateUi()
+
+    @pyqtSlot(str)
+    def addDroppedDocument(self, filename):
+
+        if self.checkLayerEditingMode:
+          return
 
     @pyqtSlot()
     def linkDocument(self):
