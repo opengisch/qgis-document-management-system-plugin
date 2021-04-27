@@ -9,9 +9,9 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase
+from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase, QDir
 from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsApplication, QgsExpressionContextUtils, QgsFeatureRequest
+from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFeatureRequest
 
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
@@ -36,14 +36,22 @@ class DocumentModel(QAbstractTableModel):
         super(DocumentModel, self).__init__(parent)
         self._relation = QgsRelation()
         self._nmRelation = QgsRelation()
+        self._documents_path = str()
         self._document_path = str()
-        self.document_author = str()
+        self._document_author = str()
         self._feature = QgsFeature()
         self._document_list = []
 
-    def init(self, relation: QgsRelation, nmRelation: QgsRelation, feature: QgsFeature, document_path: str, document_author: str):
+    def init(self,
+             relation: QgsRelation,
+             nmRelation: QgsRelation,
+             feature: QgsFeature,
+             documents_path: str,
+             document_path: str,
+             document_author: str):
         self._relation = relation
         self._nmRelation = nmRelation
+        self._documents_path = documents_path
         self._document_path = document_path
         self._document_author = document_author
         self._feature = feature
@@ -91,7 +99,7 @@ class DocumentModel(QAbstractTableModel):
         self.beginResetModel()
         self._document_list = []
 
-        if self._relation.isValid() == False or self._feature.isValid() == False:
+        if self._relation.isValid() is False or self._feature.isValid() is False:
             self.endResetModel()
             return
 
@@ -118,15 +126,24 @@ class DocumentModel(QAbstractTableModel):
 
         mime_database = QMimeDatabase()
         for feature in feature_list:
-            print("n:m feature", feature.id(), "path:", feature["path"])
-            expression_result = str()
+            documents_path = str()
+            if self._documents_path:
+                exp = QgsExpression(self._documents_path)
+                context = QgsExpressionContext()
+                context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
+                context.setFeature(feature)
+                documents_path = exp.evaluate(context)
+
+            document_filename = str()
             if self._document_path:
                 exp = QgsExpression(self._document_path)
                 context = QgsExpressionContext()
                 context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
                 context.setFeature(feature)
-                expression_result = exp.evaluate(context)
-            file_info = QFileInfo(expression_result)
+                document_filename = exp.evaluate(context)
+
+            file_info = QFileInfo(QDir(documents_path),
+                                  document_filename)
 
             mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
             mime_type_name = str()
@@ -157,4 +174,3 @@ class DocumentModel(QAbstractTableModel):
                                        })
 
         self.endResetModel()
-

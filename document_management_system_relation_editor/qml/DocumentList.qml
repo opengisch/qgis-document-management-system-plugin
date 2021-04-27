@@ -249,7 +249,7 @@ Item {
                     }
                     onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
                                                     : showMessageDialog(qsTr("Inexisting document"),
-                                                                        qsTr("Document '%1' does't exists.").arg(DocumentPath));
+                                                                        qsTr("Document '%1' does't exists.").arg(DocumentPath))
                 }
             }
         }
