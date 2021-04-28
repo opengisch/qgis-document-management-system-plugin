@@ -13,6 +13,7 @@ from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFil
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFeatureRequest
 
+
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
     RelationIdRole = Qt.UserRole + 2
@@ -37,7 +38,7 @@ class DocumentModel(QAbstractTableModel):
         self._relation = QgsRelation()
         self._nmRelation = QgsRelation()
         self._documents_path = str()
-        self._document_path = str()
+        self._document_filename = str()
         self._document_author = str()
         self._feature = QgsFeature()
         self._document_list = []
@@ -47,12 +48,12 @@ class DocumentModel(QAbstractTableModel):
              nmRelation: QgsRelation,
              feature: QgsFeature,
              documents_path: str,
-             document_path: str,
+             document_filename: str,
              document_author: str):
         self._relation = relation
         self._nmRelation = nmRelation
         self._documents_path = documents_path
-        self._document_path = document_path
+        self._document_filename = document_filename
         self._document_author = document_author
         self._feature = feature
         self.reloadData()
@@ -74,7 +75,7 @@ class DocumentModel(QAbstractTableModel):
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
             return None
 
-        return self._document_list[ index.row() ][ role ]
+        return self._document_list[index.row()][role]
 
     def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
@@ -112,7 +113,7 @@ class DocumentModel(QAbstractTableModel):
         if self._nmRelation.isValid():
             filters = []
             for feature in feature_list:
-                referencedFeatureRequest = self._nmRelation.getReferencedFeatureRequest( feature )
+                referencedFeatureRequest = self._nmRelation.getReferencedFeatureRequest(feature)
                 filterExpression = referencedFeatureRequest.filterExpression()
                 filters.append("(" + filterExpression.expression() + ")")
 
@@ -135,19 +136,18 @@ class DocumentModel(QAbstractTableModel):
                 documents_path = exp.evaluate(context)
 
             document_filename = str()
-            if self._document_path:
-                exp = QgsExpression(self._document_path)
+            if self._document_filename:
+                exp = QgsExpression(self._document_filename)
                 context = QgsExpressionContext()
                 context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
                 context.setFeature(feature)
                 document_filename = exp.evaluate(context)
+            file_info = QFileInfo(QDir(str(documents_path)),
+                                  str(document_filename))
 
-            file_info = QFileInfo(QDir(documents_path),
-                                  document_filename)
-
-            mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
-            mime_type_name = str()
             icon_name = str()
+            mime_type_name = str()
+            mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
             for mime_type in mime_types:
                 if mime_type:
                     mime_type_name = mime_type.name()
@@ -160,17 +160,18 @@ class DocumentModel(QAbstractTableModel):
                 context = QgsExpressionContext()
                 context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
                 context.setFeature(feature)
-                document_author = exp.evaluate(context)
+                document_author = str(exp.evaluate(context))
 
-            self._document_list.append({ self.DocumentIdRole:          feature.id(),
-                                         self.DocumentPathRole:        file_info.filePath(),
-                                         self.DocumentNameRole:        file_info.fileName(),
-                                         self.DocumentExistsRole:      file_info.exists(),
-                                         self.DocumentTypeRole:        mime_type_name,
-                                         self.DocumentCreatedTimeRole: file_info.created(),
-                                         self.DocumentCreatedUserRole: document_author,
-                                         self.DocumentIconRole:        icon_name,
-                                         self.DocumentIsImageRole:     mime_type_name.startswith("image/")
-                                       })
+            self._document_list.append({
+              self.DocumentIdRole:          feature.id(),
+              self.DocumentPathRole:        file_info.filePath(),
+              self.DocumentNameRole:        file_info.fileName(),
+              self.DocumentExistsRole:      file_info.exists(),
+              self.DocumentTypeRole:        mime_type_name,
+              self.DocumentCreatedTimeRole: file_info.created(),
+              self.DocumentCreatedUserRole: document_author,
+              self.DocumentIconRole:        icon_name,
+              self.DocumentIsImageRole:     mime_type_name.startswith("image/")
+              })
 
         self.endResetModel()

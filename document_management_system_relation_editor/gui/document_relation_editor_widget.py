@@ -10,7 +10,7 @@
 
 from PyQt5.QtQuickWidgets import QQuickWidget
 import os
-from qgis.PyQt.QtCore import QUrl, QObject, QFileInfo, pyqtSignal, pyqtProperty, pyqtSlot
+from qgis.PyQt.QtCore import QUrl, QObject, QDir, pyqtSignal, pyqtProperty, pyqtSlot
 from qgis.PyQt.QtWidgets import QVBoxLayout, QMessageBox
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsApplication, QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFields, QgsVectorLayerTools, QgsVectorLayerUtils, QgsGeometry, QgsFeature
@@ -110,11 +110,11 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
             exp = QgsExpression(self.documents_path)
             context = QgsExpressionContext()
             context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
-            default_documents_path = exp.evaluate(context)
+            default_documents_path = str(exp.evaluate(context))
 
-        fileinfo = QFileInfo(QUrl(fileUrl).toLocalFile())
-        print("Filename: {0}, default location {1}".format(fileinfo.filePath(),
-                                                           default_documents_path))
+        filename = QUrl(fileUrl).toLocalFile()
+        if default_documents_path:
+            filename = QDir(default_documents_path).relativeFilePath(filename)
 
         keyAttrs = dict()
 
@@ -122,10 +122,9 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         fields = self.relation().referencingLayer().fields()
 
         # For generated relations insert the referenced layer field
-        if self.relation().type() is QgsRelation.Generated:
+        if self.relation().type() == QgsRelation.Generated:
             polyRel = self.relation().polymorphicRelation()
-            keyAttrs.insert(fields.indexFromName(polyRel.referencedLayerField()),
-                            polyRel.layerRepresentation(self.relation().referencedLayer()))
+            keyAttrs[fields.indexFromName(polyRel.referencedLayerField())] = polyRel.layerRepresentation(self.relation().referencedLayer())
 
         if self.nmRelation().isValid():
             # only normal relations support m:n relation
@@ -135,38 +134,45 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
                                      self.tr("Invalid relation, Only normal relations support m:n relation."))
                 return
 
+            # Pre fill inserting document filepath
+            attributes = {
+              self.nmRelation().referencedLayer().fields().indexFromName(self.document_filename): filename
+            }
+
             # n:m Relation: first let the user create a new feature on the other table
             # and autocreate a new linking feature.
             ok, feature = self.editorContext().vectorLayerTools().addFeature(self.nmRelation().referencedLayer(),
-                                                                             dict(),
+                                                                             attributes,
                                                                              QgsGeometry())
             if not ok:
-                QMessageBox.critical(self,
-                                     self.tr("Add document"),
-                                     self.tr("Could not add a new feature."))
-                return
-
-            linkAttributes = keyAttrs.copy()
-            for key in self.relation().fieldPairs():
-                linkAttributes[fields.indexOf(key)] = self.feature().attribute(self.relation().fieldPairs()[key])
-
-            for key in self.nmRelation().fieldPairs():
-                linkAttributes[fields.indexOf(key)] = feature.attribute(self.nmRelation().fieldPairs()[key])
-
-            linkFeature = QgsVectorLayerUtils.createFeature(self.relation().referencingLayer(),
-                                                            QgsGeometry(),
-                                                            linkAttributes,
-                                                            self.relation().referencingLayer().createExpressionContext())
-
-            if not self.relation().referencingLayer().addFeature(linkFeature):
                 QMessageBox.critical(self,
                                      self.tr("Add document"),
                                      self.tr("Could not add a new linking feature."))
                 return
 
+            for key in self.relation().fieldPairs():
+                keyAttrs[fields.indexOf(key)] = self.feature().attribute(self.relation().fieldPairs()[key])
+
+            for key in self.nmRelation().fieldPairs():
+                keyAttrs[fields.indexOf(key)] = feature.attribute(self.nmRelation().fieldPairs()[key])
+
+            linkFeature = QgsVectorLayerUtils.createFeature(self.relation().referencingLayer(),
+                                                            QgsGeometry(),
+                                                            keyAttrs,
+                                                            self.relation().referencingLayer().createExpressionContext())
+
+            if not self.relation().referencingLayer().addFeature(linkFeature):
+                QMessageBox.critical(self,
+                                     self.tr("Add document"),
+                                     self.tr("Could not add a new feature."))
+                return
+
         else:
             for key in self.relation().fieldPairs():
                 keyAttrs[fields.indexFromName(key)] = self.feature().attribute(self.relation().fieldPairs()[key])
+
+            # Pre fill inserting document filepath
+            keyAttrs[fields] = filename
 
             ok, feature = self.editorContext().vectorLayerTools().addFeature(self.relation().referencingLayer(),
                                                                              keyAttrs,

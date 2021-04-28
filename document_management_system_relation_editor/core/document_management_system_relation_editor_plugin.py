@@ -36,4 +36,3 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
 
     def unload(self):
         QgsGui.relationWidgetRegistry().removeRelationWidget(WIDGET_TYPE)
-
