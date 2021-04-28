@@ -1,0 +1,18 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run tests
+      run: |
+        docker run -v ${GITHUB_WORKSPACE}:/src -w /src opengisch/qgis:stable sh -c 'xvfb-run pytest-3'
+      env:
+        DOCKER_IMAGE: ${{ steps.docker-build.outputs.FULL_IMAGE_NAME }}
