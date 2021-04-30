@@ -12,7 +12,7 @@ import os
 from qgis.PyQt.uic import loadUiType
 from qgis.gui import QgsAbstractRelationEditorConfigWidget
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_config_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_feature_side_config_widget.ui'))
 
 
 class DocumentRelationEditorConfigWidget(QgsAbstractRelationEditorConfigWidget, WidgetUi):

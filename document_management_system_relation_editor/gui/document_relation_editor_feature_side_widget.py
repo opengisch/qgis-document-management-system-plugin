@@ -17,7 +17,7 @@ from qgis.core import QgsApplication, QgsProject, QgsRelation, QgsPolymorphicRel
 from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
 from document_management_system_relation_editor.core.document_model import DocumentModel
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_feature_side_widget.ui'))
 
 
 class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
@@ -68,7 +68,7 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
                         self.document_author)
 
     def afterSetRelations(self):
-        self._nmRelation = QgsProject.instance().relationManager().relation(self.nmRelationId())
+        self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
 
     def checkLayerEditingMode(self):
 

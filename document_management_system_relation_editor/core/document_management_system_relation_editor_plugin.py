@@ -11,7 +11,8 @@
 import os
 from qgis.PyQt.QtCore import QCoreApplication, QTranslator, QObject, QLocale, QSettings
 from qgis.gui import QgisInterface, QgsGui
-from document_management_system_relation_editor.gui.document_relation_editor_widget_factory import DocumentRelationEditorWidgetFactory, WIDGET_TYPE
+from document_management_system_relation_editor.gui.document_relation_editor_feature_side_widget_factory import DocumentRelationEditorWidgetFactory
+from document_management_system_relation_editor.gui.document_relation_editor_document_side_widget_factory import DocumentRelationEditorDocumentSideWidgetFactory
 
 DEBUG = True
 
@@ -33,6 +34,8 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
 
     def initGui(self):
         QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorWidgetFactory())
+        QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory())
 
     def unload(self):
-        QgsGui.relationWidgetRegistry().removeRelationWidget(WIDGET_TYPE)
+        QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorWidgetFactory.type())
+        QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory.type())
