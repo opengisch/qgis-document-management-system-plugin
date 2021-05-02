@@ -10,8 +10,9 @@
 
 import os
 from enum import Enum
-from qgis.PyQt.QtCore import pyqtSlot
-from qgis.PyQt.QtWidgets import QMessageBox, QTreeWidgetItem
+from qgis.PyQt.QtCore import Qt, pyqtSlot
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QMessageBox, QTreeWidgetItem, QAction
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsGeometry, QgsFeature, QgsFeatureRequest
 from qgis.gui import QgsAbstractRelationEditorWidget
@@ -43,6 +44,27 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         self._polymorphicRelation = QgsPolymorphicRelation()
 
         self.cardinality = Cardinality.ManyToOne
+
+        # Actions
+        self.actionShowForm = QAction(QIcon(":/images/themes/default/mActionMultiEdit.svg"),
+                                      self.tr("Show form"))
+        self.actionLinkFeature = QAction(QIcon(":/images/themes/default/mActionLink.svg"),
+                                         self.tr("Link feature"))
+        self.actionUnlinkFeature = QAction(QIcon(":/images/themes/default/mActionUnlink.svg"),
+                                           self.tr("Unlink feature"))
+
+        # Tool buttons
+        self.mShowFormToolButton.setDefaultAction(self.actionShowForm)
+        self.mShowFormToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.mLinkFeaturesToolButton.setDefaultAction(self.actionLinkFeature)
+        self.mLinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.mUnlinkFeaturesToolButton.setDefaultAction(self.actionUnlinkFeature)
+        self.mUnlinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        # Signal slots
+        self.actionShowForm.triggered.connect(self.actionShowFormTriggered)
+        self.actionLinkFeature.triggered.connect(self.actionLinkFeatureTriggered)
+        self.actionUnlinkFeature.triggered.connect(self.actionUnlinkFeatureTriggered)
 
     def nmRelation(self):
         return self._nmRelation
@@ -193,3 +215,25 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
         else:
             print("WARNING invalid cardinality set")
+
+    def actionShowFormTriggered(self):
+
+        if self.mFeaturesTreeWidget.currentItem() is None:
+            QMessageBox.critical(self,
+                                 self.tr("No feature selected"),
+                                 self.tr("Please select a feature."))
+            return
+
+        print("actionShowFormTriggered: {0}".format(self.mFeaturesTreeWidget.currentItem()))
+
+    def actionLinkFeatureTriggered(self):
+        print("actionLinkFeatureTriggered")
+
+    def actionUnlinkFeatureTriggered(self):
+
+        if self.mFeaturesTreeWidget.currentItem() is None:
+            QMessageBox.critical(self,
+                                 self.tr("No feature selected"),
+                                 self.tr("Please select a feature to unlink."))
+
+        print("actionUnlinkFeatureTriggered")

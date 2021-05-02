@@ -38,7 +38,10 @@ class DocumentRelationEditorDocumentSideConfigWidget(QgsAbstractRelationEditorCo
         }
 
     def setConfig(self, config):
-        self.mPolymorphicRelationGroupBox.setChecked(config.get('polymorphic_relation_enabled'))
+        configPolymorphicRelationEnabled = config.get('polymorphic_relation_enabled')
+        if configPolymorphicRelationEnabled is None:
+            configPolymorphicRelationEnabled = False
+        self.mPolymorphicRelationGroupBox.setChecked(configPolymorphicRelationEnabled)
 
         polymorphicRelationId = config.get('polymorphic_relation_id')
         polymorphicRelation = QgsProject.instance().relationManager().polymorphicRelation(polymorphicRelationId)
