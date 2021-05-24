@@ -9,13 +9,13 @@
 # -----------------------------------------------------------
 
 import os
-from enum import Enum
+from enum import Enum, IntEnum
 from qgis.PyQt.QtCore import Qt, pyqtSlot
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QMessageBox, QTreeWidgetItem, QAction
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsGeometry, QgsFeature, QgsFeatureRequest
-from qgis.gui import QgsAbstractRelationEditorWidget
+from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_document_side_widget.ui'))
 
@@ -25,6 +25,17 @@ class Cardinality(Enum):
     ManyToMany = 2
     ManyToOnePolymorphic = 3
     ManyToManyPolymorphic = 4
+
+
+class TreeWidgetItemType(Enum):
+    Layer = 1
+    Feature = 2
+
+
+class TreeWidgetItemRole(IntEnum):
+    Type = Qt.UserRole + 1
+    Layer = Qt.UserRole + 2
+    Feature = Qt.UserRole + 3
 
 
 class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
@@ -60,6 +71,11 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         self.mLinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.mUnlinkFeaturesToolButton.setDefaultAction(self.actionUnlinkFeature)
         self.mUnlinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        # TreeWidgetItem menu
+        self.mFeaturesTreeWidget.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.mFeaturesTreeWidget.addAction(self.actionShowForm)
+        self.mFeaturesTreeWidget.addAction(self.actionUnlinkFeature)
 
         # Signal slots
         self.actionShowForm.triggered.connect(self.actionShowFormTriggered)
@@ -97,7 +113,10 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
             layer = self.relation().referencingLayer()
             request = self.relation().getRelatedFeaturesRequest(self.feature())
             for feature in layer.getFeatures(request):
-                QTreeWidgetItem(self.mFeaturesTreeWidget, [str(feature.id())])
+                treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [str(feature.id())])
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
             return
 
         if self.cardinality == Cardinality.ManyToMany:
@@ -114,7 +133,10 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
                 finalLayer = self.nmRelation().referencedLayer()
                 for finalFeature in finalLayer.getFeatures(nmRequest):
-                    QTreeWidgetItem(self.mFeaturesTreeWidget, [str(finalFeature.id())])
+                    treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [str(finalFeature.id())])
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, finalLayer)
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
             return
 
         if self.cardinality == Cardinality.ManyToOnePolymorphic:
@@ -122,16 +144,22 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
             for relation in self._polymorphicRelation.generateRelations():
                 layer = relation.referencingLayer()
                 request = relation.getRelatedFeaturesRequest(self.feature())
+                finalLayer = relation.referencedLayer()
                 for feature in layer.getFeatures(request):
-                    if finalLayer.name() in layerFeature:
-                        layerFeature[finalLayer.name()].append(finalFeature.id())
+                    if finalLayer in layerFeature:
+                        layerFeature[finalLayer].append(finalFeature)
                     else:
-                        layerFeature[finalLayer.name()] = [finalFeature.id()]
+                        layerFeature[finalLayer] = [finalFeature]
 
-            for layerName in layerFeature:
-                treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layerName])
-                for featureId in layerFeature[layerName]:
-                    QTreeWidgetItem(treeWidgetItemLayer, [str(featureId)])
+            for layer in layerFeature:
+                treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
+                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
+                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
+                for feature in layerFeature[layer]:
+                    treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
                 treeWidgetItemLayer.setExpanded(True)
 
         if self.cardinality == Cardinality.ManyToManyPolymorphic:
@@ -150,15 +178,20 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
                     finalLayer = relation.referencedLayer()
                     for finalFeature in finalLayer.getFeatures(nmRequest):
-                        if finalLayer.name() in layerFeature:
-                            layerFeature[finalLayer.name()].append(finalFeature.id())
+                        if finalLayer in layerFeature:
+                            layerFeature[finalLayer].append(finalFeature)
                         else:
-                            layerFeature[finalLayer.name()] = [finalFeature.id()]
+                            layerFeature[finalLayer] = [finalFeature]
 
-            for layerName in layerFeature:
-                treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layerName])
-                for featureId in layerFeature[layerName]:
-                    QTreeWidgetItem(treeWidgetItemLayer, [str(featureId)])
+            for layer in layerFeature:
+                treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
+                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
+                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
+                for feature in layerFeature[layer]:
+                    treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
+                    treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
                 treeWidgetItemLayer.setExpanded(True)
 
     def afterSetRelations(self):
@@ -224,7 +257,19 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
                                  self.tr("Please select a feature."))
             return
 
-        print("actionShowFormTriggered: {0}".format(self.mFeaturesTreeWidget.currentItem()))
+        if self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature:
+            QMessageBox.critical(self,
+                                 self.tr("Selected item is not a feature"),
+                                 self.tr("Please select a feature."))
+            return
+
+        showDocumentFormDialog = QgsAttributeDialog(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Layer),
+                                                    self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Feature),
+                                                    False,
+                                                    self,
+                                                    True)
+        showDocumentFormDialog.exec()
+        self.updateUi()
 
     def actionLinkFeatureTriggered(self):
         print("actionLinkFeatureTriggered")
