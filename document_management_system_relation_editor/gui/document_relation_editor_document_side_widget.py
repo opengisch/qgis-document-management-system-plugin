@@ -82,6 +82,10 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         self.actionShowForm.triggered.connect(self.actionShowFormTriggered)
         self.actionLinkFeature.triggered.connect(self.actionLinkFeatureTriggered)
         self.actionUnlinkFeature.triggered.connect(self.actionUnlinkFeatureTriggered)
+        self.mFeaturesTreeWidget.currentItemChanged.connect(self.featuresTreeWidgetCurrentItemChanged)
+
+        # Initialize actions enabled states
+        self.featuresTreeWidgetCurrentItemChanged()
 
     def nmRelation(self):
         return self._nmRelation
@@ -388,3 +392,13 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         if self.cardinality == Cardinality.ManyToManyPolymorphic:
             self.relation().referencingLayer().deleteFeature(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.LinkFeature).id())
             self.updateUi()
+
+    def featuresTreeWidgetCurrentItemChanged(self):
+
+      if (self.mFeaturesTreeWidget.currentItem() is None
+          or self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature):
+          self.actionShowForm.setEnabled(False)
+          self.actionUnlinkFeature.setEnabled(False)
+      else:
+          self.actionShowForm.setEnabled(True)
+          self.actionUnlinkFeature.setEnabled(True)

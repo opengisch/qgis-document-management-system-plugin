@@ -4,6 +4,14 @@ import QtQuick.Dialogs 1.1
 
 Item {
 
+    property int selectedDocumentId: listView.visible
+                                     ? (listView.currentItem
+                                        ? listView.currentItem.documentId
+                                        : -1 )
+                                     : (gridView.currentItem
+                                        ? gridView.currentItem.documentId
+                                        : -1)
+
     SystemPalette {
         id: myPalette;
         colorGroup: SystemPalette.Active
@@ -331,14 +339,8 @@ Item {
         id: action_UnlinkDocument
         text: "Unlink document"
         icon.name: ":/images/themes/default/mActionUnlink.svg"
+        enabled: selectedDocumentId >= 0
         onTriggered: {
-            var selectedDocumentId = getSelectedDocumentId();
-            if (selectedDocumentId < 0)
-            {
-                showMessageDialog(qsTr("No document selected"),
-                                  qsTr("Please select a document to unlink."));
-                return;
-            }
             parentWidget.unlinkDocument(selectedDocumentId);
         }
     }
@@ -346,14 +348,8 @@ Item {
         id: action_ShowForm
         text: "Show form"
         icon.name: ":/images/themes/default/mActionMultiEdit.svg"
+        enabled: selectedDocumentId >= 0
         onTriggered:  {
-            var selectedDocumentId = getSelectedDocumentId();
-            if (selectedDocumentId < 0)
-            {
-                showMessageDialog(qsTr("No document selected"),
-                                  qsTr("Please select a document first."));
-                return;
-            }
             parentWidget.showDocumentForm(selectedDocumentId);
         }
     }
@@ -391,38 +387,6 @@ Item {
         messageDialog.title = title;
         messageDialog.text = text;
         messageDialog.open();
-    }
-
-    function getSelectedDocumentPath()
-    {
-        if (listView.visible)
-        {
-            if(listView.currentItem)
-                return listView.currentItem.documentPath;
-        }
-        else
-        {
-            if(gridView.currentItem)
-                return gridView.currentItem.documentPath;
-        }
-
-        return "";
-    }
-
-    function getSelectedDocumentId()
-    {
-        if (listView.visible)
-        {
-            if(listView.currentItem)
-                return listView.currentItem.documentId;
-        }
-        else
-        {
-            if(gridView.currentItem)
-                return gridView.currentItem.documentId;
-        }
-
-        return -1;
     }
 }
 
