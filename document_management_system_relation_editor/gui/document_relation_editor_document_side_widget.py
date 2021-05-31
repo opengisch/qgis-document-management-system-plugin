@@ -12,10 +12,10 @@ import os
 from enum import Enum, IntEnum
 from qgis.PyQt.QtCore import Qt, pyqtSlot
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QMessageBox, QTreeWidgetItem, QAction
+from qgis.PyQt.QtWidgets import QMessageBox, QTreeWidgetItem, QAction, QInputDialog
 from qgis.PyQt.uic import loadUiType
-from qgis.core import QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsGeometry, QgsFeature, QgsFeatureRequest
-from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
+from qgis.core import QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsGeometry, QgsFeature, QgsFeatureRequest, QgsVectorLayerUtils
+from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog, QgsFeatureSelectionDlg
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_document_side_widget.ui'))
 
@@ -36,6 +36,7 @@ class TreeWidgetItemRole(IntEnum):
     Type = Qt.UserRole + 1
     Layer = Qt.UserRole + 2
     Feature = Qt.UserRole + 3
+    LinkFeature = Qt.UserRole + 4
 
 
 class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
@@ -188,20 +189,22 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
                 finalLayer = relation.referencedLayer()
                 for finalFeature in finalLayer.getFeatures(nmRequest):
+                    features = finalFeature, feature
                     if finalLayer in layerFeature:
-                        layerFeature[finalLayer].append(finalFeature)
+                        layerFeature[finalLayer].append(features)
                     else:
-                        layerFeature[finalLayer] = [finalFeature]
+                        layerFeature[finalLayer] = [features]
 
         for layer in layerFeature:
             treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
-            for feature in layerFeature[layer]:
+            for feature, linkFeature in layerFeature[layer]:
                 treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.LinkFeature, linkFeature)
             treeWidgetItemLayer.setExpanded(True)
 
     def afterSetRelations(self):
@@ -293,17 +296,71 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
             self.linkFeature()
 
         if self.cardinality == Cardinality.ManyToOnePolymorphic:
-            self.linFeatureManyToOnePolymorphic()
+            self.linkFeatureManyToOnePolymorphic()
 
         if self.cardinality == Cardinality.ManyToManyPolymorphic:
-            self.linFeatureManyToManyPolymorphic()
+            self.linkFeatureManyToManyPolymorphic()
 
-    def linFeatureManyToOnePolymorphic(self):
+    def linkFeatureManyToOnePolymorphic(self):
         print("link ManyToOnePolymorphic")
 
-    def linFeatureManyToManyPolymorphic(self):
-        print("link ManyToManyPolymorphic")
+    def linkFeatureManyToManyPolymorphic(self):
 
+        nmRelations = dict()
+        for relation in self._polymorphicRelation.generateRelations():
+            nmRelations[relation.referencedLayer().name()] = relation
+
+        layerName, ok = QInputDialog.getItem(self,
+                                             self.tr("Please selct a layer"),
+                                             self.tr("Layer:"),
+                                             nmRelations.keys())
+
+        if not ok:
+            return
+
+        selectionDlg = QgsFeatureSelectionDlg(nmRelations[layerName].referencedLayer(),
+                                              self.editorContext(),
+                                              self)
+        selectionDlg.setWindowTitle(self.tr("Please select the features to link. Layer: {0}").format(layerName))
+        if not selectionDlg.exec():
+            return
+
+        # Fields of the linking table
+        fields = self.relation().referencingLayer().fields()
+
+        linkAttributes = dict()
+        linkAttributes[fields.indexFromName(self._polymorphicRelation.referencedLayerField())] = self._polymorphicRelation.layerRepresentation(self.relation().referencedLayer())
+        for key in self.relation().fieldPairs():
+            linkAttributes[fields.indexOf(key)] = self.feature().attribute(self.relation().fieldPairs()[key])
+
+        # Expression context for the linking table
+        context = self.relation().referencingLayer().createExpressionContext()
+
+        selectedFeatures = selectionDlg.selectedFeatures()
+        print(selectedFeatures)
+
+        nmRelation = nmRelations[layerName]
+        featureIterator = nmRelation.referencedLayer().getFeatures(
+                                  QgsFeatureRequest()
+                                  .setFilterFids(selectionDlg.selectedFeatures())
+                                  .setSubsetOfAttributes(nmRelation.referencedFields()))
+        relatedFeature = QgsFeature()
+        newFeatures = []
+        while featureIterator.nextFeature(relatedFeature):
+            for key in nmRelation.fieldPairs():
+                linkAttributes[fields.indexOf(key)] = self.feature().attribute(nmRelation.fieldPairs()[key])
+
+            linkFeature = QgsVectorLayerUtils.createFeature(self.relation().referencingLayer(),
+                                                            QgsGeometry(),
+                                                            linkAttributes,
+                                                            context)
+            newFeatures.append(linkFeature)
+
+        self.relation().referencingLayer().addFeatures(newFeatures)
+        ids = []
+        for feature in newFeatures:
+            ids.append(feature.id())
+        self.relation().referencingLayer().selectByIds(ids)
 
     def actionUnlinkFeatureTriggered(self):
 
@@ -332,4 +389,5 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
             print("unlink ManyToOnePolymorphic")
 
         if self.cardinality == Cardinality.ManyToManyPolymorphic:
-            print("unlink ManyToManyPolymorphic")
+            self.relation().referencingLayer().deleteFeature(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.LinkFeature).id())
+            self.updateUi()
