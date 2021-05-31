@@ -110,89 +110,99 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
             return
 
         if self.cardinality == Cardinality.ManyToOne:
-            layer = self.relation().referencingLayer()
-            request = self.relation().getRelatedFeaturesRequest(self.feature())
+            self.updateUiManyToOne()
+
+        if self.cardinality == Cardinality.ManyToMany:
+            self.updateUiManyToMany()
+
+        if self.cardinality == Cardinality.ManyToOnePolymorphic:
+            self.updateUiManyToOnePolymorphic()
+
+        if self.cardinality == Cardinality.ManyToManyPolymorphic:
+            self.updateUiManyToManyPolymorphic()
+
+    def updateUiManyToOne(self):
+        layer = self.relation().referencingLayer()
+        request = self.relation().getRelatedFeaturesRequest(self.feature())
+        for feature in layer.getFeatures(request):
+            treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [str(feature.id())])
+            treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+            treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
+            treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
+
+    def updateUiManyToMany(self):
+        layer = self.relation().referencingLayer()
+        request = self.relation().getRelatedFeaturesRequest(self.feature())
+        filters = []
+        for feature in layer.getFeatures(request):
+            referencedFeatureRequest = self.nmRelation().getReferencedFeatureRequest(feature)
+            filterExpression = referencedFeatureRequest.filterExpression()
+            filters.append("(" + filterExpression.expression() + ")")
+
+            nmRequest = QgsFeatureRequest()
+            nmRequest.setFilterExpression(" OR ".join(filters))
+
+            finalLayer = self.nmRelation().referencedLayer()
+            for finalFeature in finalLayer.getFeatures(nmRequest):
+                treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [str(finalFeature.id())])
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, finalLayer)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
+
+    def updateUiManyToOnePolymorphic(self):
+        layerFeature = dict()
+        for relation in self._polymorphicRelation.generateRelations():
+            layer = relation.referencingLayer()
+            request = relation.getRelatedFeaturesRequest(self.feature())
+            finalLayer = relation.referencedLayer()
             for feature in layer.getFeatures(request):
-                treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [str(feature.id())])
+                if finalLayer in layerFeature:
+                    layerFeature[finalLayer].append(feature)
+                else:
+                    layerFeature[finalLayer] = [feature]
+
+        for layer in layerFeature:
+            treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
+            treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
+            treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
+            for feature in layerFeature[layer]:
+                treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
-            return
+            treeWidgetItemLayer.setExpanded(True)
 
-        if self.cardinality == Cardinality.ManyToMany:
-            layer = self.relation().referencingLayer()
-            request = self.relation().getRelatedFeaturesRequest(self.feature())
-            filters = []
-            for feature in layer.getFeatures(request):
-                referencedFeatureRequest = self.nmRelation().getReferencedFeatureRequest(feature)
+    def updateUiManyToManyPolymorphic(self):
+        layer = self.relation().referencingLayer()
+        request = self.relation().getRelatedFeaturesRequest(self.feature())
+        filters = []
+        layerFeature = dict()
+        for feature in layer.getFeatures(request):
+            for relation in self._polymorphicRelation.generateRelations():
+                referencedFeatureRequest = relation.getReferencedFeatureRequest(feature)
                 filterExpression = referencedFeatureRequest.filterExpression()
                 filters.append("(" + filterExpression.expression() + ")")
 
                 nmRequest = QgsFeatureRequest()
                 nmRequest.setFilterExpression(" OR ".join(filters))
 
-                finalLayer = self.nmRelation().referencedLayer()
-                for finalFeature in finalLayer.getFeatures(nmRequest):
-                    treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [str(finalFeature.id())])
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, finalLayer)
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
-            return
-
-        if self.cardinality == Cardinality.ManyToOnePolymorphic:
-            layerFeature = dict()
-            for relation in self._polymorphicRelation.generateRelations():
-                layer = relation.referencingLayer()
-                request = relation.getRelatedFeaturesRequest(self.feature())
                 finalLayer = relation.referencedLayer()
-                for feature in layer.getFeatures(request):
+                for finalFeature in finalLayer.getFeatures(nmRequest):
                     if finalLayer in layerFeature:
                         layerFeature[finalLayer].append(finalFeature)
                     else:
                         layerFeature[finalLayer] = [finalFeature]
 
-            for layer in layerFeature:
-                treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
-                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
-                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
-                for feature in layerFeature[layer]:
-                    treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
-                treeWidgetItemLayer.setExpanded(True)
-
-        if self.cardinality == Cardinality.ManyToManyPolymorphic:
-            layer = self.relation().referencingLayer()
-            request = self.relation().getRelatedFeaturesRequest(self.feature())
-            filters = []
-            layerFeature = dict()
-            for feature in layer.getFeatures(request):
-                for relation in self._polymorphicRelation.generateRelations():
-                    referencedFeatureRequest = relation.getReferencedFeatureRequest(feature)
-                    filterExpression = referencedFeatureRequest.filterExpression()
-                    filters.append("(" + filterExpression.expression() + ")")
-
-                    nmRequest = QgsFeatureRequest()
-                    nmRequest.setFilterExpression(" OR ".join(filters))
-
-                    finalLayer = relation.referencedLayer()
-                    for finalFeature in finalLayer.getFeatures(nmRequest):
-                        if finalLayer in layerFeature:
-                            layerFeature[finalLayer].append(finalFeature)
-                        else:
-                            layerFeature[finalLayer] = [finalFeature]
-
-            for layer in layerFeature:
-                treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
-                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
-                treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
-                for feature in layerFeature[layer]:
-                    treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
-                    treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
-                treeWidgetItemLayer.setExpanded(True)
+        for layer in layerFeature:
+            treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
+            treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
+            treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
+            for feature in layerFeature[layer]:
+                treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
+                treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
+            treeWidgetItemLayer.setExpanded(True)
 
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
@@ -272,13 +282,54 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         self.updateUi()
 
     def actionLinkFeatureTriggered(self):
-        print("actionLinkFeatureTriggered")
+
+        if self.checkLayerEditingMode() is False:
+            return
+
+        if self.cardinality == Cardinality.ManyToOne:
+            self.linkFeature()
+
+        if self.cardinality == Cardinality.ManyToMany:
+            self.linkFeature()
+
+        if self.cardinality == Cardinality.ManyToOnePolymorphic:
+            self.linFeatureManyToOnePolymorphic()
+
+        if self.cardinality == Cardinality.ManyToManyPolymorphic:
+            self.linFeatureManyToManyPolymorphic()
+
+    def linFeatureManyToOnePolymorphic(self):
+        print("link ManyToOnePolymorphic")
+
+    def linFeatureManyToManyPolymorphic(self):
+        print("link ManyToManyPolymorphic")
+
 
     def actionUnlinkFeatureTriggered(self):
+
+        if self.checkLayerEditingMode() is False:
+            return
 
         if self.mFeaturesTreeWidget.currentItem() is None:
             QMessageBox.critical(self,
                                  self.tr("No feature selected"),
                                  self.tr("Please select a feature to unlink."))
+            return
 
-        print("actionUnlinkFeatureTriggered")
+        if self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature:
+            QMessageBox.critical(self,
+                                 self.tr("Selected item is not a feature"),
+                                 self.tr("Please select a feature."))
+            return
+
+        if self.cardinality == Cardinality.ManyToOne:
+            self.unlinkFeature(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Feature).id())
+
+        if self.cardinality == Cardinality.ManyToMany:
+            self.unlinkFeature(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Feature).id())
+
+        if self.cardinality == Cardinality.ManyToOnePolymorphic:
+            print("unlink ManyToOnePolymorphic")
+
+        if self.cardinality == Cardinality.ManyToManyPolymorphic:
+            print("unlink ManyToManyPolymorphic")
