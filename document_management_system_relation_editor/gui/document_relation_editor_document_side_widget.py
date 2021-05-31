@@ -318,7 +318,8 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         if not ok:
             return
 
-        selectionDlg = QgsFeatureSelectionDlg(nmRelations[layerName].referencedLayer(),
+        nmRelation = nmRelations[layerName]
+        selectionDlg = QgsFeatureSelectionDlg(nmRelation.referencedLayer(),
                                               self.editorContext(),
                                               self)
         selectionDlg.setWindowTitle(self.tr("Please select the features to link. Layer: {0}").format(layerName))
@@ -329,17 +330,13 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         fields = self.relation().referencingLayer().fields()
 
         linkAttributes = dict()
-        linkAttributes[fields.indexFromName(self._polymorphicRelation.referencedLayerField())] = self._polymorphicRelation.layerRepresentation(self.relation().referencedLayer())
+        linkAttributes[fields.indexFromName(self._polymorphicRelation.referencedLayerField())] = self._polymorphicRelation.layerRepresentation(nmRelation.referencedLayer())
         for key in self.relation().fieldPairs():
             linkAttributes[fields.indexOf(key)] = self.feature().attribute(self.relation().fieldPairs()[key])
 
         # Expression context for the linking table
         context = self.relation().referencingLayer().createExpressionContext()
 
-        selectedFeatures = selectionDlg.selectedFeatures()
-        print(selectedFeatures)
-
-        nmRelation = nmRelations[layerName]
         featureIterator = nmRelation.referencedLayer().getFeatures(
                                   QgsFeatureRequest()
                                   .setFilterFids(selectionDlg.selectedFeatures())
@@ -348,7 +345,7 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
         newFeatures = []
         while featureIterator.nextFeature(relatedFeature):
             for key in nmRelation.fieldPairs():
-                linkAttributes[fields.indexOf(key)] = self.feature().attribute(nmRelation.fieldPairs()[key])
+                linkAttributes[fields.indexOf(key)] = relatedFeature.attribute(nmRelation.fieldPairs()[key])
 
             linkFeature = QgsVectorLayerUtils.createFeature(self.relation().referencingLayer(),
                                                             QgsGeometry(),
