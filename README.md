@@ -49,3 +49,5 @@ Set to *Document relation editor (Feature side)*
 ### Document side
 
 ### Feature side
+
+![Configuration feature side](docs/images/WidgetFeatureSideScreencast.gif)
