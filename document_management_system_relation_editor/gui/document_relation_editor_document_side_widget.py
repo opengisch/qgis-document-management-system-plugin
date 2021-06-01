@@ -180,20 +180,17 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
     def updateUiManyToManyPolymorphic(self):
         layer = self.relation().referencingLayer()
         request = self.relation().getRelatedFeaturesRequest(self.feature())
-        filters = []
         layerFeature = dict()
-        for feature in layer.getFeatures(request):
+        for linkFeature in layer.getFeatures(request):
             for relation in self._polymorphicRelation.generateRelations():
-                referencedFeatureRequest = relation.getReferencedFeatureRequest(feature)
+                referencedFeatureRequest = relation.getReferencedFeatureRequest(linkFeature)
                 filterExpression = referencedFeatureRequest.filterExpression()
-                filters.append("(" + filterExpression.expression() + ")")
-
                 nmRequest = QgsFeatureRequest()
-                nmRequest.setFilterExpression(" OR ".join(filters))
+                nmRequest.setFilterExpression(filterExpression.expression())
 
                 finalLayer = relation.referencedLayer()
                 for finalFeature in finalLayer.getFeatures(nmRequest):
-                    features = finalFeature, feature
+                    features = finalFeature, linkFeature
                     if finalLayer in layerFeature:
                         layerFeature[finalLayer].append(features)
                     else:
@@ -301,9 +298,11 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
         if self.cardinality == Cardinality.ManyToOnePolymorphic:
             self.linkFeatureManyToOnePolymorphic()
+            self.updateUi()
 
         if self.cardinality == Cardinality.ManyToManyPolymorphic:
             self.linkFeatureManyToManyPolymorphic()
+            self.updateUi()
 
     def linkFeatureManyToOnePolymorphic(self):
         print("link ManyToOnePolymorphic")
