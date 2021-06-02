@@ -10,9 +10,12 @@
 
 import os
 from qgis.PyQt.QtCore import QCoreApplication, QTranslator, QObject, QLocale, QSettings
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction
 from qgis.gui import QgisInterface, QgsGui
 from document_management_system_relation_editor.gui.document_relation_editor_feature_side_widget_factory import DocumentRelationEditorWidgetFactory
 from document_management_system_relation_editor.gui.document_relation_editor_document_side_widget_factory import DocumentRelationEditorDocumentSideWidgetFactory
+from document_management_system_relation_editor.gui.configuration_wizard.configuration_wizard import ConfigurationWizard
 
 DEBUG = True
 
@@ -21,9 +24,9 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
 
     plugin_name = "&Document Management System Relation Editor"
 
-    def __init__(self, iface: QgisInterface):
+    def __init__(self, interface: QgisInterface):
         QObject.__init__(self)
-        self.iface = iface
+        self.interface = interface
 
         # initialize translation
         qgis_locale = QLocale(QSettings().value('locale/userLocale'))
@@ -32,10 +35,122 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
         self.translator.load(qgis_locale, 'actions_for_relations', '_', locale_path)
         QCoreApplication.installTranslator(self.translator)
 
+        self.actions = []
+        self.MENU_ITEM_NAME = self.tr('&Document management system')
+
+    # noinspection PyMethodMayBeStatic
+    def tr(self, message):
+        """Get the translation for a string using Qt translation API.
+
+        We implement this ourselves since we do not inherit QObject.
+
+        :param message: String for translation.
+        :type message: str, QString
+
+        :returns: Translated version of message.
+        :rtype: QString
+        """
+        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
+        return QCoreApplication.translate('QFieldSync', message)
+
+    def add_action(
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
+        """Add a toolbar icon to the toolbar.
+
+        :param icon_path: Path to the icon for this action. Can be a resource
+            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
+        :type icon_path: str
+
+        :param text: Text that should be shown in menu items for this action.
+        :type text: str
+
+        :param callback: Function to be called when the action is triggered.
+        :type callback: function
+
+        :param enabled_flag: A flag indicating if the action should be enabled
+            by default. Defaults to True.
+        :type enabled_flag: bool
+
+        :param add_to_menu: Flag indicating whether the action should also
+            be added to the menu. Defaults to True.
+        :type add_to_menu: bool
+
+        :param add_to_toolbar: Flag indicating whether the action should also
+            be added to the toolbar. Defaults to True.
+        :type add_to_toolbar: bool
+
+        :param status_tip: Optional text to show in a popup when mouse pointer
+            hovers over the action.
+        :type status_tip: str
+
+        :param parent: Parent widget for the new action. Defaults None.
+        :type parent: QWidget
+
+        :param whats_this: Optional text to show in the status bar when the
+            mouse pointer hovers over the action.
+
+        :returns: The action that was created. Note that the action is also
+            added to self.actions list.
+        :rtype: QAction
+        """
+
+        icon = QIcon(icon_path)
+        action = QAction(icon, text, parent)
+        action.triggered.connect(callback)
+        action.setEnabled(enabled_flag)
+
+        if status_tip is not None:
+            action.setStatusTip(status_tip)
+
+        if whats_this is not None:
+            action.setWhatsThis(whats_this)
+
+        if add_to_toolbar:
+            self.toolbar.addAction(action)
+
+        if add_to_menu:
+            self.interface.addPluginToMenu(
+                self.MENU_ITEM_NAME,
+                action)
+
+        self.actions.append(action)
+
+        return action
+
     def initGui(self):
+
+        self.add_action(str(),
+                        text=self.tr('Configuration &wizard'),
+                        callback=self.showConfigurationWizard,
+                        parent=self.interface.mainWindow(),
+                        add_to_toolbar=False)
+
+        
         QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorWidgetFactory())
         QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory())
 
     def unload(self):
+
+        # Removes the plugin menu item
+        for action in self.actions:
+            self.interface.removePluginMenu(self.MENU_ITEM_NAME,
+                                        action)
+
         QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorWidgetFactory.type())
         QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory.type())
+
+    def showConfigurationWizard(self):
+        """
+        Show configuration wizard
+        """
+        configurationWizard = ConfigurationWizard(self.interface)
+        configurationWizard.exec_()
