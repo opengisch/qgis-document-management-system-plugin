@@ -213,6 +213,9 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
         self._setCardinality()
 
+    def parentFormValueChanged(self, attribute, newValue):
+        pass
+
     def checkLayerEditingMode(self):
 
         if self.relation().referencingLayer().isEditable() is False:
@@ -394,10 +397,10 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
     def featuresTreeWidgetCurrentItemChanged(self):
 
-      if (self.mFeaturesTreeWidget.currentItem() is None
-          or self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature):
-          self.actionShowForm.setEnabled(False)
-          self.actionUnlinkFeature.setEnabled(False)
-      else:
-          self.actionShowForm.setEnabled(True)
-          self.actionUnlinkFeature.setEnabled(True)
+        if (self.mFeaturesTreeWidget.currentItem() is None or
+            self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature):
+            self.actionShowForm.setEnabled(False)
+            self.actionUnlinkFeature.setEnabled(False)
+        else:
+            self.actionShowForm.setEnabled(True)
+            self.actionUnlinkFeature.setEnabled(True)

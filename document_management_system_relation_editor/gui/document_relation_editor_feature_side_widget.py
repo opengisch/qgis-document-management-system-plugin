@@ -70,6 +70,9 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
 
+    def parentFormValueChanged(self, attribute, newValue):
+        pass
+
     def checkLayerEditingMode(self):
 
         if self.relation().referencingLayer().isEditable() is False:
@@ -136,7 +139,7 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
             # Pre fill inserting document filepath
             attributes = {
-              self.nmRelation().referencedLayer().fields().indexFromName(self.document_filename): filename
+                self.nmRelation().referencedLayer().fields().indexFromName(self.document_filename): filename
             }
 
             # n:m Relation: first let the user create a new feature on the other table
