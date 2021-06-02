@@ -1,5 +1,6 @@
 venv
 .idea
+.kdev4
 __pycache__
 *.orig
 i18n
