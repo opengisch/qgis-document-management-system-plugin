@@ -1,8 +1,8 @@
 [general]
-name=Document Management System Plugin
+name=Document Management System
 qgisMinimumVersion=3.17
-description=Provides a relation editor widget to handle document management system relations
-about=Provides a relation editor widget to handle document relations
+description=Provides an interface to handle document management system relations
+about=Provides a an interface to handle document management system relations on both sides (document and object side). It supports both 1-N and N-M relations.
 version=dev
 author=Damiano Lombardi
 email=damiano@opengis.ch
