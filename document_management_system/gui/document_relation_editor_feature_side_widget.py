@@ -15,7 +15,7 @@ from qgis.PyQt.QtWidgets import QVBoxLayout, QMessageBox
 from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsApplication, QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFields, QgsVectorLayerTools, QgsVectorLayerUtils, QgsGeometry, QgsFeature
 from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
-from document_management_system_relation_editor.core.document_model import DocumentModel
+from document_management_system.core.document_model import DocumentModel
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_feature_side_widget.ui'))
 

@@ -9,8 +9,8 @@
 # -----------------------------------------------------------
 
 from qgis.gui import QgsAbstractRelationEditorWidgetFactory
-from document_management_system_relation_editor.gui.document_relation_editor_document_side_widget import DocumentRelationEditorDocumentSideWidget
-from document_management_system_relation_editor.gui.document_relation_editor_document_side_config_widget import DocumentRelationEditorDocumentSideConfigWidget
+from document_management_system.gui.document_relation_editor_document_side_widget import DocumentRelationEditorDocumentSideWidget
+from document_management_system.gui.document_relation_editor_document_side_config_widget import DocumentRelationEditorDocumentSideConfigWidget
 
 
 class DocumentRelationEditorDocumentSideWidgetFactory(QgsAbstractRelationEditorWidgetFactory):
