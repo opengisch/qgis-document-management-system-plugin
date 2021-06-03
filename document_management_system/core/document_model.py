@@ -9,7 +9,7 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase, QDir
+from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase, QDir, QUrl
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFeatureRequest
 
@@ -26,12 +26,13 @@ class DocumentModel(QAbstractTableModel):
     DocumentIdRole          = Qt.UserRole + 1
     DocumentPathRole        = Qt.UserRole + 2
     DocumentNameRole        = Qt.UserRole + 3
-    DocumentExistsRole      = Qt.UserRole + 4
-    DocumentTypeRole        = Qt.UserRole + 5
-    DocumentCreatedTimeRole = Qt.UserRole + 6
-    DocumentCreatedUserRole = Qt.UserRole + 7
-    DocumentIconRole        = Qt.UserRole + 8
-    DocumentIsImageRole     = Qt.UserRole + 9
+    DocumentURLRole         = Qt.UserRole + 4
+    DocumentExistsRole      = Qt.UserRole + 5
+    DocumentTypeRole        = Qt.UserRole + 6
+    DocumentCreatedTimeRole = Qt.UserRole + 7
+    DocumentCreatedUserRole = Qt.UserRole + 8
+    DocumentIconRole        = Qt.UserRole + 9
+    DocumentIsImageRole     = Qt.UserRole + 10
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -88,6 +89,7 @@ class DocumentModel(QAbstractTableModel):
             self.DocumentIdRole:          b'DocumentId',
             self.DocumentPathRole:        b'DocumentPath',
             self.DocumentNameRole:        b'DocumentName',
+            self.DocumentURLRole:         b'DocumentURL',
             self.DocumentExistsRole:      b'DocumentExists',
             self.DocumentTypeRole:        b'DocumentType',
             self.DocumentCreatedTimeRole: b'DocumentCreatedTime',
@@ -166,6 +168,7 @@ class DocumentModel(QAbstractTableModel):
               self.DocumentIdRole:          feature.id(),
               self.DocumentPathRole:        file_info.filePath(),
               self.DocumentNameRole:        file_info.fileName(),
+              self.DocumentURLRole:         QUrl.fromLocalFile(file_info.filePath()),
               self.DocumentExistsRole:      file_info.exists(),
               self.DocumentTypeRole:        mime_type_name,
               self.DocumentCreatedTimeRole: file_info.created(),

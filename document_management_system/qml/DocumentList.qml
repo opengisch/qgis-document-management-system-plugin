@@ -138,6 +138,7 @@ Item {
                         sourceComponent: component_ToolTip;
 
                         property string documentPath: DocumentPath
+                        property string documentURL: DocumentURL
                         property string documentType: DocumentType
                         property string documentCreatedTime: DocumentCreatedTime
                         property string documentCreatedUser: DocumentCreatedUser
@@ -213,7 +214,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: DocumentIsImage
                         source: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                        : DocumentIsImage ? DocumentPath
+                                                        : DocumentIsImage ? DocumentURL
                                                                           : ""
                         fillMode: Image.PreserveAspectFit
                     }
@@ -236,6 +237,7 @@ Item {
                         sourceComponent: component_ToolTip;
 
                         property string documentPath: DocumentPath
+                        property string documentURL: DocumentURL
                         property string documentType: DocumentType
                         property string documentCreatedTime: DocumentCreatedTime
                         property string documentCreatedUser: DocumentCreatedUser
@@ -273,7 +275,7 @@ Item {
                 height: grid_Names.height
                 visible: documentIsImage
                 source: documentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                : documentIsImage ? documentPath
+                                                : documentIsImage ? documentURL
                                                                   : ""
                 fillMode: Image.PreserveAspectFit
             }
