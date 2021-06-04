@@ -36,6 +36,8 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
         self._nmRelation = QgsRelation()
 
+        os.environ["QT_QUICK_CONTROLS_STYLE"] = "Fusion"
+
         layout = QVBoxLayout()
         self.view = QQuickWidget()
         self.view.rootContext().setContextProperty("documentModel", self.model)

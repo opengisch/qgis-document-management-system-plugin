@@ -1,5 +1,5 @@
-import QtQuick 2.10
-import QtQuick.Controls 2.5
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Dialogs 1.1
 
 Item {
@@ -37,7 +37,7 @@ Item {
             anchors.right: rectangle_Header.right
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Icon view")
-            icon.name: ":/images/themes/default/mActionIconView.svg"
+            icon.source: "qrc:///images/themes/default/mActionIconView.svg"
             checkable: true
             checked: false
 
@@ -48,7 +48,7 @@ Item {
             anchors.right: button_IconView.left
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("List view")
-            icon.name: ":/images/themes/default/mIconListView.svg"
+            icon.source: "qrc:///images/themes/default/mIconListView.svg"
             checkable: true
             checked: true
 
@@ -118,8 +118,8 @@ Item {
                     width: parent.height
                     height: parent.height
                     flat: true
-                    icon.name: DocumentExists == false ? ":/images/composer/missing_image.svg"
-                                                       : DocumentIcon == "" ? ":/images/themes/default/mIconFile.svg"
+                    icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
+                                                       : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
                                                                             : DocumentIcon
                 }
 
@@ -202,8 +202,8 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: !DocumentIsImage
                         flat: true
-                        icon.name: DocumentExists == false ? ":/images/composer/missing_image.svg"
-                                                           : DocumentIcon == "" ? ":/images/themes/default/mIconFile.svg"
+                        icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
+                                                           : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
                                                                                 : DocumentIcon
                         icon.height: height
                         icon.width: height
@@ -324,7 +324,7 @@ Item {
     Action {
         id: action_AddDocument
         text: qsTr("Add document")
-        icon.name: ":/images/themes/default/symbologyAdd.svg"
+        icon.source: "qrc:///images/themes/default/symbologyAdd.svg"
         onTriggered: {
             parentWidget.addDocument()
         }
@@ -332,7 +332,7 @@ Item {
     Action {
         id: action_LinkDocument
         text: qsTr("Link document")
-        icon.name: ":/images/themes/default/mActionLink.svg"
+        icon.source: "qrc:///images/themes/default/mActionLink.svg"
         onTriggered: {
             parentWidget.linkDocument()
         }
@@ -340,7 +340,7 @@ Item {
     Action {
         id: action_UnlinkDocument
         text: "Unlink document"
-        icon.name: ":/images/themes/default/mActionUnlink.svg"
+        icon.source: "qrc:///images/themes/default/mActionUnlink.svg"
         enabled: selectedDocumentId >= 0
         onTriggered: {
             parentWidget.unlinkDocument(selectedDocumentId);
@@ -349,7 +349,7 @@ Item {
     Action {
         id: action_ShowForm
         text: "Show form"
-        icon.name: ":/images/themes/default/mActionMultiEdit.svg"
+        icon.source: "qrc:///images/themes/default/mActionMultiEdit.svg"
         enabled: selectedDocumentId >= 0
         onTriggered:  {
             parentWidget.showDocumentForm(selectedDocumentId);
