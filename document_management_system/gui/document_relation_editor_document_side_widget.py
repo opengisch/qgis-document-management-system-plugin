@@ -235,31 +235,23 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
 
     def _setCardinality(self):
 
-        if (
-             self.nmRelation().isValid() is False and
-             self.polymorphicRelationEnabled is False
-           ):
+        if (self.nmRelation().isValid() is False and
+            self.polymorphicRelationEnabled is False):
             self.cardinality = Cardinality.ManyToOne
             return
 
-        elif (
-               self.nmRelation().isValid() and
-               self.polymorphicRelationEnabled is False
-             ):
+        elif (self.nmRelation().isValid() and
+              self.polymorphicRelationEnabled is False):
             self.cardinality = Cardinality.ManyToMany
             return
 
-        elif (
-               self.polymorphicRelationEnabled and
-               self._polymorphicRelation.referencingLayer().id() == self.relation().referencedLayer().id()
-             ):
-            self.cardinality = Cardinality.ManyToManyPolymorphic
+        elif (self.polymorphicRelationEnabled and
+              self._polymorphicRelation.referencingLayer().id() == self.relation().referencedLayer().id()):
+            self.cardinality = Cardinality.ManyToOnePolymorphic
             return
 
-        elif (
-               self.polymorphicRelationEnabled and
-               self._polymorphicRelation.referencingLayer().id() == self.relation().referencingLayer().id()
-             ):
+        elif (self.polymorphicRelationEnabled and
+              self._polymorphicRelation.referencingLayer().id() == self.relation().referencingLayer().id()):
             self.cardinality = Cardinality.ManyToManyPolymorphic
             return
 
