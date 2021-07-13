@@ -5,6 +5,10 @@ A document management plugin to help managing relations between a documents tabl
 
 ## Configuration
 
+### Relations
+The relation/s between the Document table and the Feature/s table/s must be configured by hand
+in the usal way in Project -> Properties -> Relations.
+
 ### Document side
 
 ![Configuration document side](docs/images/ConfigurationDocumentSideScreenshot.png)

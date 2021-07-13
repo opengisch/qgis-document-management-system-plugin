@@ -128,11 +128,11 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
 
     def initGui(self):
 
-        self.add_action(str(),
-                        text=self.tr('Configuration &wizard'),
-                        callback=self.showConfigurationWizard,
-                        parent=self.interface.mainWindow(),
-                        add_to_toolbar=False)
+        #self.add_action(str(),
+        #                text=self.tr('Configuration &wizard'),
+        #                callback=self.showConfigurationWizard,
+        #                parent=self.interface.mainWindow(),
+        #                add_to_toolbar=False)
 
         
         QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorWidgetFactory())
