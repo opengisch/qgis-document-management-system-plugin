@@ -31,6 +31,10 @@ class DocumentRelationEditorDocumentSideConfigWidget(QgsAbstractRelationEditorCo
                ):
                 self.mPolymorphicRelationComboBox.addItem(polymorphicRelations[polymorphicRelationId].name(), polymorphicRelationId)
 
+        if len(polymorphicRelations) == 0:
+            self.mPolymorphicRelationGroupBox.setEnabled(False)
+            self.mPolymorphicRelationGroupBox.setToolTip(self.tr('There are no polymorphic relations defined in current project'))
+
     def config(self):
         return {
             'polymorphic_relation_enabled': self.mPolymorphicRelationGroupBox.isChecked(),

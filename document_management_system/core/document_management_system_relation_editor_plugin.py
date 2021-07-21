@@ -12,13 +12,19 @@ import os
 from qgis.PyQt.QtCore import QCoreApplication, QTranslator, QObject, QLocale, QSettings
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-from qgis.gui import QgisInterface, QgsGui
+
+from qgis.core import QgsApplication
+from qgis.gui import (
+    QgisInterface,
+    QgsGui
+)
+
+from document_management_system.core.settings_registry import SettingsRegistry
 from document_management_system.gui.document_relation_editor_feature_side_widget_factory import DocumentRelationEditorWidgetFactory
 from document_management_system.gui.document_relation_editor_document_side_widget_factory import DocumentRelationEditorDocumentSideWidgetFactory
 from document_management_system.gui.configuration_wizard.configuration_wizard import ConfigurationWizard
 
 DEBUG = True
-
 
 class DocumentManagementSystemRelationEditorPlugin(QObject):
 
@@ -38,20 +44,9 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
         self.actions = []
         self.MENU_ITEM_NAME = self.tr('&Document management system')
 
-    # noinspection PyMethodMayBeStatic
-    def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('QFieldSync', message)
+        # Plugin settings
+        self.settingsRegistry = SettingsRegistry()
+        QgsApplication.settingsRegistryCore().addSubRegistry(self.settingsRegistry)
 
     def add_action(
             self,
@@ -133,7 +128,6 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
         #                callback=self.showConfigurationWizard,
         #                parent=self.interface.mainWindow(),
         #                add_to_toolbar=False)
-
         
         QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorWidgetFactory())
         QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory())
@@ -143,10 +137,13 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
         # Removes the plugin menu item
         for action in self.actions:
             self.interface.removePluginMenu(self.MENU_ITEM_NAME,
-                                        action)
+                                            action)
 
         QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorWidgetFactory.type())
         QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory.type())
+
+        #if qgisversion > 3.20:
+        #    QgsApplication.settingsRegistryCore().removeSubRegistry(self.settingsRegistry)
 
     def showConfigurationWizard(self):
         """

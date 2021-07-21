@@ -17,6 +17,12 @@ Item {
         colorGroup: SystemPalette.Active
     }
 
+    Component.onCompleted: {
+        console.log("Completed: " + parentWidget.defaultViewList)
+        button_IconView.checked = !parentWidget.defaultViewList
+        button_ListView.checked = parentWidget.defaultViewList
+    }
+
     Rectangle {
         id: rectangle_Header
         width: parent.width
@@ -39,9 +45,11 @@ Item {
             text: qsTr("Icon view")
             icon.source: "qrc:///images/themes/default/mActionIconView.svg"
             checkable: true
-            checked: false
 
-            onToggled: button_ListView.checked = !button_IconView.checked
+            onToggled: {
+                button_ListView.checked = !button_IconView.checked
+                parentWidget.defaultViewList = button_ListView.checked
+            }
         }
         Button {
             id: button_ListView
@@ -50,9 +58,11 @@ Item {
             text: qsTr("List view")
             icon.source: "qrc:///images/themes/default/mIconListView.svg"
             checkable: true
-            checked: true
 
-            onToggled: button_IconView.checked = !button_ListView.checked
+            onToggled: {
+                button_IconView.checked = !button_ListView.checked
+                parentWidget.defaultViewList = button_ListView.checked
+            }
         }
     }
 

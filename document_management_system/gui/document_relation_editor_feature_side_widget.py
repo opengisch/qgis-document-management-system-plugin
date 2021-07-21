@@ -10,17 +10,61 @@
 
 from PyQt5.QtQuickWidgets import QQuickWidget
 import os
-from qgis.PyQt.QtCore import QUrl, QObject, QDir, pyqtSignal, pyqtProperty, pyqtSlot
+from enum import Enum
+from qgis.PyQt.QtCore import (
+    QUrl,
+    QObject,
+    QDir,
+    pyqtSignal,
+    pyqtProperty,
+    pyqtSlot,
+)
 from qgis.PyQt.QtWidgets import QVBoxLayout, QMessageBox
 from qgis.PyQt.uic import loadUiType
-from qgis.core import QgsApplication, QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFields, QgsVectorLayerTools, QgsVectorLayerUtils, QgsGeometry, QgsFeature
-from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog
+from qgis.core import (
+    QgsApplication,
+    QgsProject,
+    QgsRelation,
+    QgsPolymorphicRelation,
+    QgsExpression,
+    QgsExpressionContext,
+    QgsExpressionContextUtils,
+    QgsFields,
+    QgsVectorLayerTools,
+    QgsVectorLayerUtils,
+    QgsGeometry,
+    QgsFeature,
+    QgsSettingsEntryString
+)
+from qgis.gui import (
+    QgsAbstractRelationEditorWidget,
+    QgsAttributeDialog
+)
 from document_management_system.core.document_model import DocumentModel
+from document_management_system.core.plugin_helper import PluginHelper
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_feature_side_widget.ui'))
 
 
 class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
+
+    class DefaultView(str, Enum):
+        RememberLast = "RememberLast"
+        ListView = "ListView"
+        IconView = "IconView"
+
+    class LastView(str, Enum):
+        ListView = "ListView"
+        IconView = "IconView"
+
+    settingsDefaultView = QgsSettingsEntryString('relationEditorFeatureSideDefaultView',
+                                                 PluginHelper.PLUGIN_SLUG,
+                                                 DefaultView.RememberLast,
+                                                 PluginHelper.tr('Default view when opening a relation editor document side widget'))
+    settingsLastView = QgsSettingsEntryString('relationEditorFeatureSideLastView',
+                                              PluginHelper.PLUGIN_SLUG,
+                                              LastView.ListView,
+                                              PluginHelper.tr('Last view used in the relation editor document side widget'))
 
     def __init__(self, config, parent):
         super().__init__(config, parent)
@@ -46,6 +90,26 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
         layout.addWidget(self.view)
         self.setLayout(layout)
+
+    @pyqtProperty(bool)
+    def defaultViewList(self):
+        if self.settingsDefaultView.value() == DocumentRelationEditorWidget.DefaultView.ListView:
+            return True
+        elif self.settingsDefaultView.value() == DocumentRelationEditorWidget.DefaultView.IconView:
+            return False
+        else:
+            if self.settingsLastView.value() == DocumentRelationEditorWidget.LastView.IconView:
+                return False
+            else:
+                return True
+
+    @defaultViewList.setter
+    def defaultViewList(self, value):
+        if self.settingsDefaultView.value() == DocumentRelationEditorWidget.DefaultView.RememberLast:
+            if value:
+                self.settingsLastView.setValue(DocumentRelationEditorWidget.LastView.ListView)
+            else:
+                self.settingsLastView.setValue(DocumentRelationEditorWidget.LastView.IconView)
 
     def nmRelation(self):
         return self._nmRelation

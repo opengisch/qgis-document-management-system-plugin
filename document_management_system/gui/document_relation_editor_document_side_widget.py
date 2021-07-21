@@ -9,13 +9,40 @@
 # -----------------------------------------------------------
 
 import os
-from enum import Enum, IntEnum
-from qgis.PyQt.QtCore import Qt, pyqtSlot
+from enum import (
+    Enum,
+    IntEnum
+)
+from qgis.PyQt.QtCore import (
+    Qt,
+    QObject,
+    pyqtSlot
+)
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QMessageBox, QTreeWidgetItem, QAction, QInputDialog
+from qgis.PyQt.QtWidgets import (
+    QMessageBox,
+    QTreeWidgetItem,
+    QAction,
+    QInputDialog
+)
 from qgis.PyQt.uic import loadUiType
-from qgis.core import QgsProject, QgsRelation, QgsPolymorphicRelation, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsGeometry, QgsFeature, QgsFeatureRequest, QgsVectorLayerUtils
-from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog, QgsFeatureSelectionDlg
+from qgis.core import (
+    QgsProject,
+    QgsRelation,
+    QgsPolymorphicRelation,
+    QgsExpression,
+    QgsExpressionContext,
+    QgsExpressionContextUtils,
+    QgsGeometry,
+    QgsFeature,
+    QgsFeatureRequest,
+    QgsVectorLayerUtils
+)
+from qgis.gui import (
+    QgsAbstractRelationEditorWidget,
+    QgsAttributeDialog,
+    QgsFeatureSelectionDlg
+)
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_document_side_widget.ui'))
 
@@ -44,8 +71,6 @@ class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, 
     def __init__(self, config, parent):
         super().__init__(config, parent)
         self.setupUi(self)
-
-        print('DocumentRelationEditorDocumentSideWidget.__init__')
 
         self.polymorphicRelationEnabled = False
         self.polymorphicRelationId = str()
