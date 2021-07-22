@@ -15,10 +15,18 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="2">
-    <widget class="QgsFieldExpressionWidget" name="mDocumentsPathExpressionWidget" native="true"/>
+    <widget class="QgsFieldExpressionWidget" name="mDocumentsPathExpressionWidget" native="true">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; color:#363c42; background-color:#ffffff;&quot;&gt;An expression to the default path for documents. This is in most cases the same expression as for the attachment widget’s default path in the documents table attribute form.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="2">
-    <widget class="QgsFieldExpressionWidget" name="mDocumentFilenameExpressionWidget" native="true"/>
+    <widget class="QgsFieldExpressionWidget" name="mDocumentFilenameExpressionWidget" native="true">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name of the field containing the filename in the documents table&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
    </item>
    <item row="2" column="2">
     <widget class="QgsFieldExpressionWidget" name="mDocumentAuthorExpressionWidget" native="true"/>
@@ -33,7 +41,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Documents path</string>
+      <string>Documents default path</string>
      </property>
     </widget>
    </item>
@@ -53,7 +61,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Document filename</string>
+      <string>Documents path field name</string>
      </property>
     </widget>
    </item>
