@@ -30,19 +30,46 @@ Item {
         z: 1
         color: myPalette.window
 
-        Text {
-            id: text_Title
+        // Buttons links
+        ButtonToolTip {
+            id: button_ShowForm
             anchors.left: rectangle_Header.left
             anchors.verticalCenter: parent.verticalCenter
-            style: Text.Raised
-            text: qsTr("Documents:")
+            display: AbstractButton.IconOnly
+            action: action_ShowForm
+            tooltip: action_ShowForm.text
+        }
+        ButtonToolTip {
+            id: button_AddDocument
+            anchors.left: button_ShowForm.right
+            anchors.verticalCenter: parent.verticalCenter
+            display: AbstractButton.IconOnly
+            action: action_AddDocument
+            tooltip: action_AddDocument.text
+        }
+        ButtonToolTip {
+            id: button_LinkDocument
+            anchors.left: button_AddDocument.right
+            anchors.verticalCenter: parent.verticalCenter
+            display: AbstractButton.IconOnly
+            action: action_LinkDocument
+            tooltip: action_LinkDocument.text
+        }
+        ButtonToolTip {
+            id: button_UnlinkDocument
+            anchors.left: button_LinkDocument.right
+            anchors.verticalCenter: parent.verticalCenter
+            display: AbstractButton.IconOnly
+            action: action_UnlinkDocument
+            tooltip: action_UnlinkDocument.text
         }
 
-        Button {
+        // Buttons right
+        ButtonToolTip {
             id: button_IconView
             anchors.right: rectangle_Header.right
             anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("Icon view")
+            tooltip: qsTr("Icon view")
             icon.source: "qrc:///images/themes/default/mActionIconView.svg"
             checkable: true
 
@@ -51,11 +78,11 @@ Item {
                 parentWidget.defaultViewList = button_ListView.checked
             }
         }
-        Button {
+        ButtonToolTip {
             id: button_ListView
             anchors.right: button_IconView.left
             anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("List view")
+            tooltip: qsTr("List view")
             icon.source: "qrc:///images/themes/default/mIconListView.svg"
             checkable: true
 
@@ -66,45 +93,11 @@ Item {
         }
     }
 
-    Rectangle {
-        id: rectangle_Footer
-        width: parent.width
-        height: button_UnlinkDocument.height
-        anchors.bottom: parent.bottom
-        z: 1
-        color: myPalette.window
-
-        Button {
-            id: button_UnlinkDocument
-            anchors.right: rectangle_Footer.right
-            anchors.verticalCenter: parent.verticalCenter
-            action: action_UnlinkDocument
-        }
-        Button {
-            id: button_LinkDocument
-            anchors.right: button_UnlinkDocument.left
-            anchors.verticalCenter: parent.verticalCenter
-            action: action_LinkDocument
-        }
-        Button {
-            id: button_AddDocument
-            anchors.right: button_LinkDocument.left
-            anchors.verticalCenter: parent.verticalCenter
-            action: action_AddDocument
-        }
-        Button {
-            id: button_ShowForm
-            anchors.right: button_AddDocument.left
-            anchors.verticalCenter: parent.verticalCenter
-            action: action_ShowForm
-        }
-    }
-
     ListView {
         id: listView
         width: parent.width
         anchors.top: rectangle_Header.bottom
-        anchors.bottom: rectangle_Footer.top
+        anchors.bottom: parent.bottom
         z: 0
         visible: button_ListView.checked
         focus: true
@@ -181,7 +174,7 @@ Item {
         id: gridView
         width: parent.width
         anchors.top: rectangle_Header.bottom
-        anchors.bottom: rectangle_Footer.top
+        anchors.bottom: parent.bottom
         z: 0
         visible: !button_ListView.checked
         focus: true

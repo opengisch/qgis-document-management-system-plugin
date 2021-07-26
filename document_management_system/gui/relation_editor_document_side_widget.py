@@ -92,11 +92,11 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
         # Tool buttons
         self.mShowFormToolButton.setDefaultAction(self.actionShowForm)
-        self.mShowFormToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.mShowFormToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
         self.mLinkFeaturesToolButton.setDefaultAction(self.actionLinkFeature)
-        self.mLinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.mLinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
         self.mUnlinkFeaturesToolButton.setDefaultAction(self.actionUnlinkFeature)
-        self.mUnlinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.mUnlinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
 
         # TreeWidgetItem menu
         self.mFeaturesTreeWidget.setContextMenuPolicy(Qt.ActionsContextMenu)
