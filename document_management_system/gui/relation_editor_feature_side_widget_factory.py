@@ -9,11 +9,11 @@
 # -----------------------------------------------------------
 
 from qgis.gui import QgsAbstractRelationEditorWidgetFactory
-from document_management_system.gui.relation_editor_feature_side_widget import RelationEditorWidget
-from document_management_system.gui.relation_editor_feature_side_config_widget import RelationEditorConfigWidget
+from document_management_system.gui.relation_editor_feature_side_widget import RelationEditorFeatureSideWidget
+from document_management_system.gui.relation_editor_feature_side_config_widget import RelationEditorFeatureSideConfigWidget
 
 
-class RelationEditorWidgetFactory(QgsAbstractRelationEditorWidgetFactory):
+class RelationEditorFeatureSideWidgetFactory(QgsAbstractRelationEditorWidgetFactory):
 
     @staticmethod
     def type():
@@ -23,7 +23,7 @@ class RelationEditorWidgetFactory(QgsAbstractRelationEditorWidgetFactory):
         return "Document relation editor (Feature side)"
 
     def create(self, config, parent):
-        return RelationEditorWidget(config, parent)
+        return RelationEditorFeatureSideWidget(config, parent)
 
     def configWidget(self, relation, parent):
-        return RelationEditorConfigWidget(relation, parent)
+        return RelationEditorFeatureSideConfigWidget(relation, parent)

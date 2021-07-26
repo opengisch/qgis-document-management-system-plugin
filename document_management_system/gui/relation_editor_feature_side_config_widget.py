@@ -15,7 +15,7 @@ from qgis.gui import QgsAbstractRelationEditorConfigWidget
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_feature_side_config_widget.ui'))
 
 
-class RelationEditorConfigWidget(QgsAbstractRelationEditorConfigWidget, WidgetUi):
+class RelationEditorFeatureSideConfigWidget(QgsAbstractRelationEditorConfigWidget, WidgetUi):
 
     def __init__(self, relation, parent):
         super().__init__(relation, parent)

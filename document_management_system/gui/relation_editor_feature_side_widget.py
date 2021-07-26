@@ -46,7 +46,7 @@ from document_management_system.core.plugin_helper import PluginHelper
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_feature_side_widget.ui'))
 
 
-class RelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
+class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
     class DefaultView(str, Enum):
         RememberLast = "RememberLast"
@@ -70,7 +70,7 @@ class RelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         super().__init__(config, parent)
         self.setupUi(self)
 
-        print('DocumentRelationEditorWidget.__init__')
+        print('DocumentRelationEditorFeatureSideWidget.__init__')
 
         self.documents_path = str()
         self.document_filename = str()
@@ -93,23 +93,23 @@ class RelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
     @pyqtProperty(bool)
     def defaultViewList(self):
-        if self.settingsDefaultView.value() == RelationEditorWidget.DefaultView.ListView:
+        if self.settingsDefaultView.value() == RelationEditorFeatureSideWidget.DefaultView.ListView:
             return True
-        elif self.settingsDefaultView.value() == RelationEditorWidget.DefaultView.IconView:
+        elif self.settingsDefaultView.value() == RelationEditorFeatureSideWidget.DefaultView.IconView:
             return False
         else:
-            if self.settingsLastView.value() == RelationEditorWidget.LastView.IconView:
+            if self.settingsLastView.value() == RelationEditorFeatureSideWidget.LastView.IconView:
                 return False
             else:
                 return True
 
     @defaultViewList.setter
     def defaultViewList(self, value):
-        if self.settingsDefaultView.value() == RelationEditorWidget.DefaultView.RememberLast:
+        if self.settingsDefaultView.value() == RelationEditorFeatureSideWidget.DefaultView.RememberLast:
             if value:
-                self.settingsLastView.setValue(RelationEditorWidget.LastView.ListView)
+                self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.ListView)
             else:
-                self.settingsLastView.setValue(RelationEditorWidget.LastView.IconView)
+                self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.IconView)
 
     def nmRelation(self):
         return self._nmRelation
@@ -125,7 +125,7 @@ class RelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
         self.document_author = config['document_author']
 
     def updateUi(self):
-        print('DocumentRelationEditorWidget.updateUi')
+        print('DocumentRelationEditorFeatureSideWidget.updateUi')
         self.model.init(self.relation(),
                         self.nmRelation(),
                         self.feature(),
