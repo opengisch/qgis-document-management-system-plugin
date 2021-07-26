@@ -44,7 +44,7 @@ from qgis.gui import (
     QgsFeatureSelectionDlg
 )
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_document_side_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_document_side_widget.ui'))
 
 
 class Cardinality(Enum):
@@ -66,7 +66,7 @@ class TreeWidgetItemRole(IntEnum):
     LinkFeature = Qt.UserRole + 4
 
 
-class DocumentRelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
+class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
     def __init__(self, config, parent):
         super().__init__(config, parent)

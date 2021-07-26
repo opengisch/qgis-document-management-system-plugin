@@ -20,8 +20,8 @@ from qgis.gui import (
 )
 
 from document_management_system.core.settings_registry import SettingsRegistry
-from document_management_system.gui.document_relation_editor_feature_side_widget_factory import DocumentRelationEditorWidgetFactory
-from document_management_system.gui.document_relation_editor_document_side_widget_factory import DocumentRelationEditorDocumentSideWidgetFactory
+from document_management_system.gui.relation_editor_feature_side_widget_factory import RelationEditorWidgetFactory
+from document_management_system.gui.relation_editor_document_side_widget_factory import RelationEditorDocumentSideWidgetFactory
 from document_management_system.gui.configuration_wizard.configuration_wizard import ConfigurationWizard
 
 DEBUG = True
@@ -129,8 +129,8 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
         #                parent=self.interface.mainWindow(),
         #                add_to_toolbar=False)
         
-        QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorWidgetFactory())
-        QgsGui.relationWidgetRegistry().addRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory())
+        QgsGui.relationWidgetRegistry().addRelationWidget(RelationEditorWidgetFactory())
+        QgsGui.relationWidgetRegistry().addRelationWidget(RelationEditorDocumentSideWidgetFactory())
 
     def unload(self):
 
@@ -139,8 +139,8 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
             self.interface.removePluginMenu(self.MENU_ITEM_NAME,
                                             action)
 
-        QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorWidgetFactory.type())
-        QgsGui.relationWidgetRegistry().removeRelationWidget(DocumentRelationEditorDocumentSideWidgetFactory.type())
+        QgsGui.relationWidgetRegistry().removeRelationWidget(RelationEditorWidgetFactory.type())
+        QgsGui.relationWidgetRegistry().removeRelationWidget(RelationEditorDocumentSideWidgetFactory.type())
 
         #if qgisversion > 3.20:
         #    QgsApplication.settingsRegistryCore().removeSubRegistry(self.settingsRegistry)

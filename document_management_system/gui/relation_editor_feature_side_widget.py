@@ -43,10 +43,10 @@ from qgis.gui import (
 from document_management_system.core.document_model import DocumentModel
 from document_management_system.core.plugin_helper import PluginHelper
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_feature_side_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_feature_side_widget.ui'))
 
 
-class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
+class RelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
     class DefaultView(str, Enum):
         RememberLast = "RememberLast"
@@ -93,23 +93,23 @@ class DocumentRelationEditorWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
     @pyqtProperty(bool)
     def defaultViewList(self):
-        if self.settingsDefaultView.value() == DocumentRelationEditorWidget.DefaultView.ListView:
+        if self.settingsDefaultView.value() == RelationEditorWidget.DefaultView.ListView:
             return True
-        elif self.settingsDefaultView.value() == DocumentRelationEditorWidget.DefaultView.IconView:
+        elif self.settingsDefaultView.value() == RelationEditorWidget.DefaultView.IconView:
             return False
         else:
-            if self.settingsLastView.value() == DocumentRelationEditorWidget.LastView.IconView:
+            if self.settingsLastView.value() == RelationEditorWidget.LastView.IconView:
                 return False
             else:
                 return True
 
     @defaultViewList.setter
     def defaultViewList(self, value):
-        if self.settingsDefaultView.value() == DocumentRelationEditorWidget.DefaultView.RememberLast:
+        if self.settingsDefaultView.value() == RelationEditorWidget.DefaultView.RememberLast:
             if value:
-                self.settingsLastView.setValue(DocumentRelationEditorWidget.LastView.ListView)
+                self.settingsLastView.setValue(RelationEditorWidget.LastView.ListView)
             else:
-                self.settingsLastView.setValue(DocumentRelationEditorWidget.LastView.IconView)
+                self.settingsLastView.setValue(RelationEditorWidget.LastView.IconView)
 
     def nmRelation(self):
         return self._nmRelation

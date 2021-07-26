@@ -13,10 +13,11 @@ from qgis.PyQt.uic import loadUiType
 from qgis.core import QgsProject
 from qgis.gui import QgsAbstractRelationEditorConfigWidget
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/document_relation_editor_document_side_config_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__),
+                                      '../ui/relation_editor_document_side_config_widget.ui'))
 
 
-class DocumentRelationEditorDocumentSideConfigWidget(QgsAbstractRelationEditorConfigWidget, WidgetUi):
+class RelationEditorDocumentSideConfigWidget(QgsAbstractRelationEditorConfigWidget, WidgetUi):
 
     def __init__(self, relation, parent):
         super().__init__(relation, parent)
