@@ -15,6 +15,7 @@ from qgis.PyQt.QtCore import (
     QUrl,
     QObject,
     QDir,
+    QSysInfo,
     pyqtSignal,
     pyqtProperty,
     pyqtSlot,
@@ -80,7 +81,8 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self._nmRelation = QgsRelation()
 
-        os.environ["QT_QUICK_CONTROLS_STYLE"] = "Fusion"
+        if QSysInfo.productType() == "windows":
+            os.environ["QT_QUICK_CONTROLS_STYLE"] = "Fusion"
 
         layout = QVBoxLayout()
         self.view = QQuickWidget()

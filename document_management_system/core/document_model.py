@@ -9,7 +9,17 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QMimeDatabase, QDir, QUrl
+from qgis.PyQt.QtCore import (
+    Qt,
+    QObject,
+    QAbstractTableModel,
+    QModelIndex,
+    QFileInfo,
+    QMimeDatabase,
+    QDir,
+    QSysInfo,
+    QUrl
+)
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFeatureRequest
 
