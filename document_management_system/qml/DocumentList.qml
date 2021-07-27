@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Dialogs 1.1
+import QtQuick.Layouts 1.15
 
 Item {
 
@@ -30,68 +31,70 @@ Item {
         z: 1
         color: myPalette.window
 
-        // Buttons links
-        ButtonToolTip {
-            id: button_ShowForm
-            anchors.left: rectangle_Header.left
-            anchors.verticalCenter: parent.verticalCenter
-            display: AbstractButton.IconOnly
-            action: action_ShowForm
-            tooltip: action_ShowForm.text
-        }
-        ButtonToolTip {
-            id: button_AddDocument
-            anchors.left: button_ShowForm.right
-            anchors.verticalCenter: parent.verticalCenter
-            display: AbstractButton.IconOnly
-            action: action_AddDocument
-            tooltip: action_AddDocument.text
-        }
-        ButtonToolTip {
-            id: button_LinkDocument
-            anchors.left: button_AddDocument.right
-            anchors.verticalCenter: parent.verticalCenter
-            display: AbstractButton.IconOnly
-            action: action_LinkDocument
-            tooltip: action_LinkDocument.text
-        }
-        ButtonToolTip {
-            id: button_UnlinkDocument
-            anchors.left: button_LinkDocument.right
-            anchors.verticalCenter: parent.verticalCenter
-            display: AbstractButton.IconOnly
-            action: action_UnlinkDocument
-            tooltip: action_UnlinkDocument.text
-        }
+        RowLayout
+        {
+            anchors.fill: parent
 
-        // Buttons right
-        ButtonToolTip {
-            id: button_IconView
-            anchors.right: rectangle_Header.right
-            anchors.verticalCenter: parent.verticalCenter
-            tooltip: qsTr("Icon view")
-            icon.source: "qrc:///images/themes/default/mActionIconView.svg"
-            checkable: true
-
-            onToggled: {
-                button_ListView.checked = !button_IconView.checked
-                parentWidget.defaultViewList = button_ListView.checked
+            // Buttons links
+            ButtonToolTip {
+                id: button_ShowForm
+                display: AbstractButton.IconOnly
+                action: action_ShowForm
+                tooltip: action_ShowForm.text
             }
-        }
-        ButtonToolTip {
-            id: button_ListView
-            anchors.right: button_IconView.left
-            anchors.verticalCenter: parent.verticalCenter
-            tooltip: qsTr("List view")
-            icon.source: "qrc:///images/themes/default/mIconListView.svg"
-            checkable: true
-
-            onToggled: {
-                button_IconView.checked = !button_ListView.checked
-                parentWidget.defaultViewList = button_ListView.checked
+            ButtonToolTip {
+                id: button_AddDocument
+                display: AbstractButton.IconOnly
+                action: action_AddDocument
+                tooltip: action_AddDocument.text
             }
-        }
-    }
+            ButtonToolTip {
+                id: button_DropDocument
+                display: AbstractButton.IconOnly
+                action: action_DropDocument
+                tooltip: action_DropDocument.text
+            }
+            ButtonToolTip {
+                id: button_LinkDocument
+                display: AbstractButton.IconOnly
+                action: action_LinkDocument
+                tooltip: action_LinkDocument.text
+            }
+            ButtonToolTip {
+                id: button_UnlinkDocument
+                display: AbstractButton.IconOnly
+                action: action_UnlinkDocument
+                tooltip: action_UnlinkDocument.text
+            }
+
+            // Spacer item
+            Item { Layout.fillWidth: true }
+
+            // Buttons right
+            ButtonToolTip {
+                id: button_ListView
+                tooltip: qsTr("List view")
+                icon.source: "qrc:///images/themes/default/mIconListView.svg"
+                checkable: true
+
+                onToggled: {
+                    button_IconView.checked = !button_ListView.checked
+                    parentWidget.defaultViewList = button_ListView.checked
+                }
+            }
+            ButtonToolTip {
+                id: button_IconView
+                tooltip: qsTr("Icon view")
+                icon.source: "qrc:///images/themes/default/mActionIconView.svg"
+                checkable: true
+
+                onToggled: {
+                    button_ListView.checked = !button_IconView.checked
+                    parentWidget.defaultViewList = button_ListView.checked
+                }
+            }
+        } // RowLayout
+    } // rectangle_Header
 
     ListView {
         id: listView
@@ -333,6 +336,15 @@ Item {
         }
     }
     Action {
+        id: action_DropDocument
+        text: qsTr("Drop document")
+        icon.source: "qrc:///images/themes/default/mActionDeleteSelected.svg"
+        enabled: selectedDocumentId >= 0
+        onTriggered: {
+            parentWidget.unlinkDocument(selectedDocumentId);
+        }
+    }
+    Action {
         id: action_LinkDocument
         text: qsTr("Link document")
         icon.source: "qrc:///images/themes/default/mActionLink.svg"
@@ -363,6 +375,9 @@ Item {
         id: contextMenu
         MenuItem {
             action: action_ShowForm
+        }
+        MenuItem {
+            action: action_DropDocument
         }
         MenuItem {
             action: action_UnlinkDocument

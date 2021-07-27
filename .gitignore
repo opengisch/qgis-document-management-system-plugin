@@ -1,7 +1,7 @@
 venv
 .idea
 .kdev4
-src.kdev4
+*.kdev4
 __pycache__
 *.orig
 i18n

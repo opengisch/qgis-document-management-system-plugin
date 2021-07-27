@@ -164,6 +164,14 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self.addFeature()
 
+    @pyqtSlot(int)
+    def dropDocument(self, documentId):
+
+        if self.checkLayerEditingMode() is False:
+            return
+
+        self.deleteFeature(documentId)
+
     @pyqtSlot(str)
     def addDroppedDocument(self, fileUrl):
 
