@@ -22,19 +22,16 @@ class RelationEditorFeatureSideConfigWidget(QgsAbstractRelationEditorConfigWidge
         self.setupUi(self)
         self.mDocumentsPathExpressionWidget.setLayer(relation.referencingLayer())
         self.mDocumentFilenameExpressionWidget.setLayer(relation.referencingLayer())
-        self.mDocumentAuthorExpressionWidget.setLayer(relation.referencingLayer())
 
     def config(self):
         return {
             'documents_path': self.mDocumentsPathExpressionWidget.currentField()[0],
             'document_filename': self.mDocumentFilenameExpressionWidget.currentField()[0],
-            'document_author': self.mDocumentAuthorExpressionWidget.currentField()[0]
         }
 
     def setConfig(self, config):
         self.mDocumentsPathExpressionWidget.setField(config.get('documents_path'))
         self.mDocumentFilenameExpressionWidget.setField(config.get('document_filename'))
-        self.mDocumentAuthorExpressionWidget.setField(config.get('document_author'))
 
     def setNmRelation(self, nmRelation):
 
@@ -46,4 +43,3 @@ class RelationEditorFeatureSideConfigWidget(QgsAbstractRelationEditorConfigWidge
 
         self.mDocumentsPathExpressionWidget.setLayer(layer)
         self.mDocumentFilenameExpressionWidget.setLayer(layer)
-        self.mDocumentAuthorExpressionWidget.setLayer(layer)

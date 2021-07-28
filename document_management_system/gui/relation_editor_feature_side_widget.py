@@ -20,7 +20,10 @@ from qgis.PyQt.QtCore import (
     pyqtProperty,
     pyqtSlot,
 )
-from qgis.PyQt.QtWidgets import QVBoxLayout, QMessageBox
+from qgis.PyQt.QtWidgets import (
+    QMessageBox,
+    QVBoxLayout
+)
 from qgis.PyQt.uic import loadUiType
 from qgis.core import (
     QgsApplication,
@@ -75,7 +78,6 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self.documents_path = str()
         self.document_filename = str()
-        self.document_author = str()
 
         self.model = DocumentModel()
 
@@ -124,7 +126,6 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     def setConfig(self, config):
         self.documents_path = config['documents_path']
         self.document_filename = config['document_filename']
-        self.document_author = config['document_author']
 
     def updateUi(self):
         print('DocumentRelationEditorFeatureSideWidget.updateUi')
@@ -132,8 +133,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
                         self.nmRelation(),
                         self.feature(),
                         self.documents_path,
-                        self.document_filename,
-                        self.document_author)
+                        self.document_filename)
 
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))

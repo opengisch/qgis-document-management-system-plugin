@@ -28,6 +28,7 @@ Item {
         id: rectangle_Header
         width: parent.width
         height: button_IconView.height + 6
+        z: 1
         color: myPalette.window
 
         RowLayout
@@ -154,7 +155,6 @@ Item {
                             property string documentURL: DocumentURL
                             property string documentType: DocumentType
                             property string documentCreatedTime: DocumentCreatedTime
-                            property string documentCreatedUser: DocumentCreatedUser
                             property bool documentExists: DocumentExists
                             property bool documentIsImage: DocumentIsImage
                         }
@@ -251,7 +251,6 @@ Item {
                             property string documentURL: DocumentURL
                             property string documentType: DocumentType
                             property string documentCreatedTime: DocumentCreatedTime
-                            property string documentCreatedUser: DocumentCreatedUser
                             property bool documentExists: DocumentExists
                             property bool documentIsImage: DocumentIsImage
                         }
@@ -320,14 +319,6 @@ Item {
                 Text {
                     font.italic: !documentCreatedTime
                     text: documentCreatedTime ? documentCreatedTime : "<Unknown>"
-                }
-                // Row 4
-                Text {
-                    text: qsTr("Created by:")
-                }
-                Text {
-                    font.italic: !documentCreatedUser
-                    text: documentCreatedUser ? documentCreatedUser : "<Unknown>"
                 }
             }
         }
