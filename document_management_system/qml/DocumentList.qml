@@ -27,8 +27,7 @@ Item {
     Rectangle {
         id: rectangle_Header
         width: parent.width
-        height: button_IconView.height
-        z: 1
+        height: button_IconView.height + 6
         color: myPalette.window
 
         RowLayout
@@ -37,31 +36,31 @@ Item {
 
             // Buttons links
             ButtonToolTip {
-                id: button_ShowForm
+                Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_ShowForm
                 tooltip: action_ShowForm.text
             }
             ButtonToolTip {
-                id: button_AddDocument
+                Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_AddDocument
                 tooltip: action_AddDocument.text
             }
             ButtonToolTip {
-                id: button_DropDocument
+                Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_DropDocument
                 tooltip: action_DropDocument.text
             }
             ButtonToolTip {
-                id: button_LinkDocument
+                Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_LinkDocument
                 tooltip: action_LinkDocument.text
             }
             ButtonToolTip {
-                id: button_UnlinkDocument
+                Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_UnlinkDocument
                 tooltip: action_UnlinkDocument.text
@@ -73,6 +72,7 @@ Item {
             // Buttons right
             ButtonToolTip {
                 id: button_ListView
+                Layout.preferredWidth: height
                 tooltip: qsTr("List view")
                 icon.source: "qrc:///images/themes/default/mIconListView.svg"
                 checkable: true
@@ -84,6 +84,7 @@ Item {
             }
             ButtonToolTip {
                 id: button_IconView
+                Layout.preferredWidth: height
                 tooltip: qsTr("Icon view")
                 icon.source: "qrc:///images/themes/default/mActionIconView.svg"
                 checkable: true
@@ -96,180 +97,185 @@ Item {
         } // RowLayout
     } // rectangle_Header
 
-    ListView {
-        id: listView
+    Rectangle {
+        id: rectangle_Content
         width: parent.width
         anchors.top: rectangle_Header.bottom
         anchors.bottom: parent.bottom
-        z: 0
-        visible: button_ListView.checked
-        focus: true
-        model: documentModel
-        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
-        ScrollBar.vertical: ScrollBar {
-            active: true
-        }
 
-        delegate: Component {
-            Item
-            {
-                width: listView.width
-                height: textDocumentName.height
-
-                property int documentId: DocumentId
-                property string documentPath: DocumentPath
-
-                Button {
-                    id: buttonIcon
-                    width: parent.height
-                    height: parent.height
-                    flat: true
-                    icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                       : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
-                                                                            : DocumentIcon
-                }
-
-                Text {
-                    id: textDocumentName
-                    anchors.left: buttonIcon.right
-                    text: DocumentName
-                }
-
-                ToolTip {
-                    id: toolTip
-                    visible: mouseArea.containsMouse
-                    delay: 1000
-
-                    contentItem: Loader {
-                        sourceComponent: component_ToolTip;
-
-                        property string documentPath: DocumentPath
-                        property string documentURL: DocumentURL
-                        property string documentType: DocumentType
-                        property string documentCreatedTime: DocumentCreatedTime
-                        property string documentCreatedUser: DocumentCreatedUser
-                        property bool documentExists: DocumentExists
-                        property bool documentIsImage: DocumentIsImage
-                    }
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    onClicked: {
-                        listView.currentIndex = index
-
-                        if(mouse.button == Qt.RightButton)
-                            contextMenu.popup()
-
-                    }
-                    onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
-                                                    : showMessageDialog(qsTr("Inexisting document"),
-                                                                        qsTr("Document '%1' does't exists.").arg(DocumentPath));
-                }
+        ListView {
+            id: listView
+            width: parent.width
+            anchors.fill: parent
+            visible: button_ListView.checked
+            focus: true
+            model: documentModel
+            highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+            ScrollBar.vertical: ScrollBar {
+                active: true
             }
-        }
-    } // ListView
 
-    GridView {
-        id: gridView
-        width: parent.width
-        anchors.top: rectangle_Header.bottom
-        anchors.bottom: parent.bottom
-        z: 0
-        visible: !button_ListView.checked
-        focus: true
-        model: documentModel
-        cellWidth: 100
-        cellHeight: 140
-        highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
-        ScrollBar.vertical: ScrollBar {
-            active: true
-        }
+            delegate: Component {
+                Item
+                {
+                    width: listView.width
+                    height: 22
 
-        delegate: Component {
-            Item
-            {
-                id: item_Delegate
-                width: gridView.cellWidth
-                height: gridView.cellHeight
-
-                property int documentId: DocumentId
-                property string documentPath: DocumentPath
-
-                Column {
-                    anchors.fill: parent
+                    property int documentId: DocumentId
+                    property string documentPath: DocumentPath
 
                     Button {
-                        width: parent.width
-                        height: 60
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        visible: !DocumentIsImage
+                        id: buttonIcon
+                        width: parent.height
+                        height: parent.height
                         flat: true
                         icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
                                                            : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
                                                                                 : DocumentIcon
-                        icon.height: height
-                        icon.width: height
                     }
-                    Image {
-                        width: parent.width
-                        height: 60
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        visible: DocumentIsImage
-                        source: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                        : DocumentIsImage ? DocumentURL
-                                                                          : ""
-                        fillMode: Image.PreserveAspectFit
-                    }
+
                     Text {
                         id: textDocumentName
-                        width: parent.width
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.left: buttonIcon.right
+                        height: parent.height
                         text: DocumentName
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.Wrap
+                        verticalAlignment: Text.AlignVCenter
                     }
-                }
 
-                ToolTip {
-                    id: toolTip
-                    visible: mouseArea.containsMouse
-                    delay: 1000
+                    ToolTip {
+                        id: toolTip
+                        visible: mouseArea.containsMouse
+                        delay: 1000
 
-                    contentItem: Loader {
-                        sourceComponent: component_ToolTip;
+                        contentItem: Loader {
+                            sourceComponent: component_ToolTip;
 
-                        property string documentPath: DocumentPath
-                        property string documentURL: DocumentURL
-                        property string documentType: DocumentType
-                        property string documentCreatedTime: DocumentCreatedTime
-                        property string documentCreatedUser: DocumentCreatedUser
-                        property bool documentExists: DocumentExists
-                        property bool documentIsImage: DocumentIsImage
+                            property string documentPath: DocumentPath
+                            property string documentURL: DocumentURL
+                            property string documentType: DocumentType
+                            property string documentCreatedTime: DocumentCreatedTime
+                            property string documentCreatedUser: DocumentCreatedUser
+                            property bool documentExists: DocumentExists
+                            property bool documentIsImage: DocumentIsImage
+                        }
                     }
-                }
 
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-                    onClicked: {
-                        gridView.currentIndex = index
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        onClicked: {
+                            listView.currentIndex = index
 
-                        if(mouse.button == Qt.RightButton)
-                            contextMenu.popup()
+                            if(mouse.button == Qt.RightButton)
+                                contextMenu.popup()
+
+                        }
+                        onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
+                                                        : showMessageDialog(qsTr("Inexisting document"),
+                                                                            qsTr("Document '%1' does't exists.").arg(DocumentPath));
                     }
-                    onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
-                                                    : showMessageDialog(qsTr("Inexisting document"),
-                                                                        qsTr("Document '%1' does't exists.").arg(DocumentPath))
                 }
             }
-        }
-    } // GridView
+        } // ListView
+
+        GridView {
+            id: gridView
+            width: parent.width
+            anchors.fill: parent
+            visible: !button_ListView.checked
+            focus: true
+            model: documentModel
+            cellWidth: 100
+            cellHeight: 140
+            highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+            ScrollBar.vertical: ScrollBar {
+                active: true
+            }
+
+            delegate: Component {
+                Item
+                {
+                    id: item_Delegate
+                    width: gridView.cellWidth
+                    height: gridView.cellHeight
+
+                    property int documentId: DocumentId
+                    property string documentPath: DocumentPath
+
+                    Column {
+                        anchors.fill: parent
+
+                        Button {
+                            width: parent.width
+                            height: 60
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: !DocumentIsImage && DocumentIcon != ""
+                            flat: true
+                            icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
+                                                               : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
+                                                                                    : DocumentIcon
+                            icon.height: height
+                            icon.width: height
+                        }
+                        Image {
+                            width: parent.width
+                            height: 60
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: DocumentIsImage || DocumentIcon == ""
+                            source: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
+                                                            : DocumentIsImage ? DocumentURL
+                                                                              : ""
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        Text {
+                            id: textDocumentName
+                            width: parent.width
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: DocumentName
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.Wrap
+                        }
+                    }
+
+                    ToolTip {
+                        id: toolTip
+                        visible: mouseArea.containsMouse
+                        delay: 1000
+
+                        contentItem: Loader {
+                            sourceComponent: component_ToolTip;
+
+                            property string documentPath: DocumentPath
+                            property string documentURL: DocumentURL
+                            property string documentType: DocumentType
+                            property string documentCreatedTime: DocumentCreatedTime
+                            property string documentCreatedUser: DocumentCreatedUser
+                            property bool documentExists: DocumentExists
+                            property bool documentIsImage: DocumentIsImage
+                        }
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        onClicked: {
+                            gridView.currentIndex = index
+
+                            if(mouse.button == Qt.RightButton)
+                                contextMenu.popup()
+                        }
+                        onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
+                                                        : showMessageDialog(qsTr("Inexisting document"),
+                                                                            qsTr("Document '%1' does't exists.").arg(DocumentPath))
+                    }
+                }
+            }
+        } // GridView
+    } // rectangle_Content
 
     Component {
         id: component_ToolTip
