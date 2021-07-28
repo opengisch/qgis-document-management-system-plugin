@@ -18,7 +18,7 @@ from qgis.PyQt.QtCore import (
     QSysInfo,
     pyqtSignal,
     pyqtProperty,
-    pyqtSlot,
+    pyqtSlot
 )
 from qgis.PyQt.QtWidgets import (
     QMessageBox,
@@ -86,19 +86,21 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         layout.addWidget(self.view)
         self.setLayout(layout)
 
-    @pyqtProperty(bool)
-    def currentViewList(self):
-        if self.settingsLastView.value() == RelationEditorFeatureSideWidget.LastView.IconView:
-            return False
-        else:
-            return True
+    @pyqtProperty(str)
+    def LIST_VIEW(self):
+      return str(RelationEditorFeatureSideWidget.LastView.ListView)
 
-    @currentViewList.setter
-    def currentViewList(self, value):
-        if value:
-            self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.ListView)
-        else:
-            self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.IconView)
+    @pyqtProperty(str)
+    def ICON_VIEW(self):
+      return str(RelationEditorFeatureSideWidget.LastView.IconView)
+
+    @pyqtProperty(str)
+    def currentView(self):
+        return self.settingsLastView.value()
+
+    @currentView.setter
+    def currentView(self, value):
+        self.settingsLastView.setValue(value)
 
     def nmRelation(self):
         return self._nmRelation

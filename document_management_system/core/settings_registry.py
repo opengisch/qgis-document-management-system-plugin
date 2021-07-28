@@ -11,6 +11,7 @@
 from qgis.core import QgsSettingsRegistry
 from document_management_system.gui.relation_editor_feature_side_widget import RelationEditorFeatureSideWidget
 
+
 class SettingsRegistry(QgsSettingsRegistry):
 
     def __init__(self):
