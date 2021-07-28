@@ -19,9 +19,9 @@ Item {
     }
 
     Component.onCompleted: {
-        console.log("Completed: " + parentWidget.defaultViewList)
-        button_IconView.checked = !parentWidget.defaultViewList
-        button_ListView.checked = parentWidget.defaultViewList
+        console.log("Completed: " + parentWidget.currentViewList)
+        button_IconView.checked = !parentWidget.currentViewList
+        button_ListView.checked = parentWidget.currentViewList
     }
 
     Rectangle {
@@ -80,7 +80,7 @@ Item {
 
                 onToggled: {
                     button_IconView.checked = !button_ListView.checked
-                    parentWidget.defaultViewList = button_ListView.checked
+                    parentWidget.currentViewList = button_ListView.checked
                 }
             }
             ButtonToolTip {
@@ -92,7 +92,7 @@ Item {
 
                 onToggled: {
                     button_ListView.checked = !button_IconView.checked
-                    parentWidget.defaultViewList = button_ListView.checked
+                    parentWidget.currentViewList = button_ListView.checked
                 }
             }
         } // RowLayout

@@ -52,19 +52,10 @@ WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation
 
 class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
 
-    class DefaultView(str, Enum):
-        RememberLast = "RememberLast"
-        ListView = "ListView"
-        IconView = "IconView"
-
     class LastView(str, Enum):
         ListView = "ListView"
         IconView = "IconView"
 
-    settingsDefaultView = QgsSettingsEntryString('relationEditorFeatureSideDefaultView',
-                                                 PluginHelper.PLUGIN_SLUG,
-                                                 DefaultView.RememberLast,
-                                                 PluginHelper.tr('Default view when opening a relation editor document side widget'))
     settingsLastView = QgsSettingsEntryString('relationEditorFeatureSideLastView',
                                               PluginHelper.PLUGIN_SLUG,
                                               LastView.ListView,
@@ -96,24 +87,18 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.setLayout(layout)
 
     @pyqtProperty(bool)
-    def defaultViewList(self):
-        if self.settingsDefaultView.value() == RelationEditorFeatureSideWidget.DefaultView.ListView:
-            return True
-        elif self.settingsDefaultView.value() == RelationEditorFeatureSideWidget.DefaultView.IconView:
+    def currentViewList(self):
+        if self.settingsLastView.value() == RelationEditorFeatureSideWidget.LastView.IconView:
             return False
         else:
-            if self.settingsLastView.value() == RelationEditorFeatureSideWidget.LastView.IconView:
-                return False
-            else:
-                return True
+            return True
 
-    @defaultViewList.setter
-    def defaultViewList(self, value):
-        if self.settingsDefaultView.value() == RelationEditorFeatureSideWidget.DefaultView.RememberLast:
-            if value:
-                self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.ListView)
-            else:
-                self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.IconView)
+    @currentViewList.setter
+    def currentViewList(self, value):
+        if value:
+            self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.ListView)
+        else:
+            self.settingsLastView.setValue(RelationEditorFeatureSideWidget.LastView.IconView)
 
     def nmRelation(self):
         return self._nmRelation
