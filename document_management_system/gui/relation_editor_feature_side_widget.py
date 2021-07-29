@@ -88,11 +88,11 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
     @pyqtProperty(str)
     def LIST_VIEW(self):
-      return str(RelationEditorFeatureSideWidget.LastView.ListView)
+        return str(RelationEditorFeatureSideWidget.LastView.ListView)
 
     @pyqtProperty(str)
     def ICON_VIEW(self):
-      return str(RelationEditorFeatureSideWidget.LastView.IconView)
+        return str(RelationEditorFeatureSideWidget.LastView.IconView)
 
     @pyqtProperty(str)
     def currentView(self):

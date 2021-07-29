@@ -39,10 +39,9 @@ class DocumentModel(QAbstractTableModel):
     DocumentURLRole         = Qt.UserRole + 4
     DocumentExistsRole      = Qt.UserRole + 5
     DocumentTypeRole        = Qt.UserRole + 6
-    DocumentCreatedTimeRole = Qt.UserRole + 7
-    DocumentCreatedUserRole = Qt.UserRole + 8
-    DocumentIconRole        = Qt.UserRole + 9
-    DocumentIsImageRole     = Qt.UserRole + 10
+    DocumentToolTipRole     = Qt.UserRole + 7
+    DocumentIconRole        = Qt.UserRole + 8
+    DocumentIsImageRole     = Qt.UserRole + 9
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -93,16 +92,15 @@ class DocumentModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
-            self.DocumentIdRole:          b'DocumentId',
-            self.DocumentPathRole:        b'DocumentPath',
-            self.DocumentNameRole:        b'DocumentName',
-            self.DocumentURLRole:         b'DocumentURL',
-            self.DocumentExistsRole:      b'DocumentExists',
-            self.DocumentTypeRole:        b'DocumentType',
-            self.DocumentCreatedTimeRole: b'DocumentCreatedTime',
-            self.DocumentCreatedUserRole: b'DocumentCreatedUser',
-            self.DocumentIconRole:        b'DocumentIcon',
-            self.DocumentIsImageRole:     b'DocumentIsImage'
+            self.DocumentIdRole:      b'DocumentId',
+            self.DocumentPathRole:    b'DocumentPath',
+            self.DocumentNameRole:    b'DocumentName',
+            self.DocumentURLRole:     b'DocumentURL',
+            self.DocumentExistsRole:  b'DocumentExists',
+            self.DocumentTypeRole:    b'DocumentType',
+            self.DocumentToolTipRole: b'DocumentToolTip',
+            self.DocumentIconRole:    b'DocumentIcon',
+            self.DocumentIsImageRole: b'DocumentIsImage'
         }
 
     def reloadData(self):
@@ -121,8 +119,8 @@ class DocumentModel(QAbstractTableModel):
 
         if self._nmRelation.isValid():
             filters = []
-            for feature in feature_list:
-                referencedFeatureRequest = self._nmRelation.getReferencedFeatureRequest(feature)
+            for joinTableFeature in feature_list:
+                referencedFeatureRequest = self._nmRelation.getReferencedFeatureRequest(joinTableFeature)
                 filterExpression = referencedFeatureRequest.filterExpression()
                 filters.append("(" + filterExpression.expression() + ")")
 
@@ -131,17 +129,17 @@ class DocumentModel(QAbstractTableModel):
 
             feature_list = []
             layer = self._nmRelation.referencedLayer()
-            for feature in layer.getFeatures(nmRequest):
-                feature_list.append(feature)
+            for documentFeature in layer.getFeatures(nmRequest):
+                feature_list.append(documentFeature)
 
         mime_database = QMimeDatabase()
-        for feature in feature_list:
+        for documentFeature in feature_list:
             documents_path = str()
             if self._documents_path:
                 exp = QgsExpression(self._documents_path)
                 context = QgsExpressionContext()
                 context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
-                context.setFeature(feature)
+                context.setFeature(documentFeature)
                 documents_path = exp.evaluate(context)
 
             document_filename = str()
@@ -149,7 +147,7 @@ class DocumentModel(QAbstractTableModel):
                 exp = QgsExpression(self._document_filename)
                 context = QgsExpressionContext()
                 context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
-                context.setFeature(feature)
+                context.setFeature(documentFeature)
                 document_filename = exp.evaluate(context)
             file_info = QFileInfo(QDir(str(documents_path)),
                                   str(document_filename))
@@ -163,14 +161,24 @@ class DocumentModel(QAbstractTableModel):
                     icon_name = mime_type.iconName()
                     break
 
+            # ToolTip
+            toolTipList = []
+            toolTipList.append("<ul>")
+            for field in documentFeature.fields():
+                index = documentFeature.fields().indexFromName(field.name())
+                toolTipList.append("<li><strong>{0}</strong>: {1}</li>".format(field.displayName(),
+                                                                               documentFeature[index]))
+            toolTipList.append("</ul>")
+
+
             self._document_list.append({
-              self.DocumentIdRole:          feature.id(),
+              self.DocumentIdRole:          documentFeature.id(),
               self.DocumentPathRole:        file_info.filePath(),
               self.DocumentNameRole:        file_info.fileName(),
               self.DocumentURLRole:         QUrl.fromLocalFile(file_info.filePath()),
               self.DocumentExistsRole:      file_info.exists(),
               self.DocumentTypeRole:        mime_type_name,
-              self.DocumentCreatedTimeRole: file_info.created(),
+              self.DocumentToolTipRole:     "".join(toolTipList),
               self.DocumentIconRole:        icon_name,
               self.DocumentIsImageRole:     mime_type_name.startswith("image/")
               })

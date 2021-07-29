@@ -160,7 +160,7 @@ Item {
                             property string documentPath: DocumentPath
                             property string documentURL: DocumentURL
                             property string documentType: DocumentType
-                            property string documentCreatedTime: DocumentCreatedTime
+                            property string documentToolTip: DocumentToolTip
                             property bool documentExists: DocumentExists
                             property bool documentIsImage: DocumentIsImage
                         }
@@ -256,7 +256,7 @@ Item {
                             property string documentPath: DocumentPath
                             property string documentURL: DocumentURL
                             property string documentType: DocumentType
-                            property string documentCreatedTime: DocumentCreatedTime
+                            property string documentToolTip: DocumentToolTip
                             property bool documentExists: DocumentExists
                             property bool documentIsImage: DocumentIsImage
                         }
@@ -285,11 +285,14 @@ Item {
     Component {
         id: component_ToolTip
 
-        Row {
+        RowLayout
+        {
+            anchors.fill: parent
             spacing: 5
 
             Image {
-                height: grid_Names.height
+                width: 100
+                Layout.maximumWidth: 100
                 visible: documentIsImage
                 source: documentExists == false ? "qrc:///images/composer/missing_image.svg"
                                                 : documentIsImage ? documentURL
@@ -297,35 +300,11 @@ Item {
                 fillMode: Image.PreserveAspectFit
             }
 
-            Grid {
-                id: grid_Names
-                columns: 2
-                spacing: 5
-
-                // Row 1
-                Text {
-                    text: qsTr("Path:")
-                }
-                Text {
-                    font.italic: !documentPath
-                    text: documentPath ? documentPath : "<Unknown>"
-                }
-                // Row 2
-                Text {
-                    text: qsTr("Type:")
-                }
-                Text {
-                    font.italic: !documentType
-                    text: documentType ? documentType : "<Unknown>"
-                }
-                // Row 3
-                Text {
-                    text: qsTr("Created on:")
-                }
-                Text {
-                    font.italic: !documentCreatedTime
-                    text: documentCreatedTime ? documentCreatedTime : "<Unknown>"
-                }
+            Text {
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                textFormat: Text.RichText
+                text: documentToolTip
             }
         }
     } // component_ToolTip
