@@ -8,10 +8,21 @@ Item {
     property int selectedDocumentId: listView.visible
                                      ? (listView.currentItem
                                         ? listView.currentItem.documentId
-                                        : -1 )
+                                        : -1)
                                      : (gridView.currentItem
                                         ? gridView.currentItem.documentId
                                         : -1)
+                                     
+    onSelectedDocumentIdChanged: {
+        if(selectedDocumentId >= 0)
+        {
+          parentWidget.currentDocumentId = selectedDocumentId
+        }
+        else
+        {
+          parentWidget.currentDocumentId = null
+        }
+    }
 
     SystemPalette {
         id: myPalette;
@@ -20,7 +31,7 @@ Item {
 
     Component.onCompleted: {
         console.log("Completed: " + parentWidget.currentView)
-        button_IconView.checked = parentWidget.currentView === parentWidget.ICON_VIEW
+        button_IconView.checked = parentWidget.currentView === CONST_ICON_VIEW
         button_ListView.checked = !button_IconView.checked
     }
 
@@ -39,32 +50,44 @@ Item {
             ButtonToolTip {
                 Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
+                action: action_ToggleEditing
+                tooltip: action.text
+            }
+            ButtonToolTip {
+                Layout.preferredWidth: height
+                display: AbstractButton.IconOnly
+                action: action_SaveChildLayerEdits
+                tooltip: action.text
+            }
+            ButtonToolTip {
+                Layout.preferredWidth: height
+                display: AbstractButton.IconOnly
                 action: action_ShowForm
-                tooltip: action_ShowForm.text
+                tooltip: action.text
             }
             ButtonToolTip {
                 Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_AddDocument
-                tooltip: action_AddDocument.text
+                tooltip: action.text
             }
             ButtonToolTip {
                 Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_DropDocument
-                tooltip: action_DropDocument.text
+                tooltip: action.text
             }
             ButtonToolTip {
                 Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_LinkDocument
-                tooltip: action_LinkDocument.text
+                tooltip: action.text
             }
             ButtonToolTip {
                 Layout.preferredWidth: height
                 display: AbstractButton.IconOnly
                 action: action_UnlinkDocument
-                tooltip: action_UnlinkDocument.text
+                tooltip: action.text
             }
 
             // Spacer item
@@ -81,9 +104,9 @@ Item {
                 onToggled: {
                     button_IconView.checked = !button_ListView.checked
                     if(button_IconView.checked)
-                        parentWidget.currentView = parentWidget.ICON_VIEW
+                        parentWidget.currentView = CONST_ICON_VIEW
                     else
-                        parentWidget.currentView = parentWidget.LIST_VIEW
+                        parentWidget.currentView = CONST_LIST_VIEW
                 }
             }
             ButtonToolTip {
@@ -96,9 +119,9 @@ Item {
                 onToggled: {
                     button_ListView.checked = !button_IconView.checked
                     if(button_IconView.checked)
-                        parentWidget.currentView = parentWidget.ICON_VIEW
+                        parentWidget.currentView = CONST_ICON_VIEW
                     else
-                        parentWidget.currentView = parentWidget.LIST_VIEW
+                        parentWidget.currentView = CONST_LIST_VIEW
                 }
             }
         } // RowLayout
@@ -308,6 +331,25 @@ Item {
             }
         }
     } // component_ToolTip
+
+    Action {
+        id: action_ToggleEditing
+        text: qsTr("Toggle editing mode for child layers")
+        icon.source: "qrc:///images/themes/default/mActionToggleEditing.svg"
+        checkable: true
+        onTriggered: {
+            parentWidget.toggleEditing(checked)
+        }
+    }
+
+    Action {
+        id: action_SaveChildLayerEdits
+        text: qsTr("Save child layer edits")
+        icon.source: "qrc:///images/themes/default/mActionSaveEdits.svg"
+        onTriggered: {
+            parentWidget.saveChildLayerEdits()
+        }
+    }
 
     Action {
         id: action_AddDocument
