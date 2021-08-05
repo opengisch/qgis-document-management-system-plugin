@@ -21,7 +21,9 @@ from qgis.PyQt.QtCore import (
     pyqtProperty,
     pyqtSlot
 )
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
+    QAction,
     QMessageBox,
     QVBoxLayout
 )
@@ -74,13 +76,36 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.model = DocumentModel()
 
         self._nmRelation = QgsRelation()
+        self.mLayerInSameTransactionGroup = False
 
         self._currentDocumentId = None
 
-        if QSysInfo.productType() == "windows":
-            os.environ["QT_QUICK_CONTROLS_STYLE"] = "Fusion"
+        # Actions
+        self.actionToggleEditing = QAction(QIcon(":/images/themes/default/mActionToggleEditing.svg"),
+                                           self.tr("Toggle editing mode for child layers"))
+        self.actionSaveEdits = QAction(QIcon(":/images/themes/default/mActionSaveEdits.svg"),
+                                       self.tr("Save child layer edits"))
+        self.actionShowForm = QAction(QIcon(":/images/themes/default/mActionMultiEdit.svg"),
+                                      self.tr("Show form"))
+        self.actionAddFeature = QAction(QIcon(":/images/themes/default/symbologyAdd.svg"),
+                                        self.tr("Add document"))
+        self.actionDeleteFeature = QAction(QIcon(":/images/themes/default/mActionDeleteSelected.svg"),
+                                           self.tr("Drop document"))
+        self.actionLinkFeature = QAction(QIcon(":/images/themes/default/mActionLink.svg"),
+                                         self.tr("Link document"))
+        self.actionUnlinkFeature = QAction(QIcon(":/images/themes/default/mActionUnlink.svg"),
+                                           self.tr("Unlink document"))
 
-        layout = QVBoxLayout()
+        # Tool buttons
+        self.mToggleEditingToolButton.setDefaultAction(self.actionToggleEditing)
+        self.mSaveEditsToolButton.setDefaultAction(self.actionSaveEdits)
+        self.mShowFormToolButton.setDefaultAction(self.actionShowForm)
+        self.mAddFeatureToolButton.setDefaultAction(self.actionAddFeature)
+        self.mDeleteFeatureToolButton.setDefaultAction(self.actionDeleteFeature)
+        self.mLinkFeatureToolButton.setDefaultAction(self.actionLinkFeature)
+        self.mUnlinkFeatureToolButton.setDefaultAction(self.actionUnlinkFeature)
+
+        # Setup QML part
         self.view = QQuickWidget()
         self.view.rootContext().setContextProperty("documentModel", self.model)
         self.view.rootContext().setContextProperty("parentWidget", self)
@@ -88,8 +113,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.view.rootContext().setContextProperty("CONST_ICON_VIEW", str(RelationEditorFeatureSideWidget.LastView.IconView))
         self.view.setSource(QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), '../qml/DocumentList.qml')))
         self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
-        layout.addWidget(self.view)
-        self.setLayout(layout)
+        self.layout().addWidget(self.view)
 
         # Set initial state for add / remove etc.buttons
         self.updateButtons()
@@ -149,37 +173,45 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
             editable = self.nmRelation().referencedLayer().isEditable()
             spatial = self.nmRelation().referencedLayer().isSpatial()
 
-        mToggleEditingButton.setEnabled(toggleEditingButtonEnabled)
-        mAddFeatureButton.setEnabled(editable)
-        mAddFeatureGeometryButton.setEnabled(editable)
-        mDuplicateFeatureButton.setEnabled(editable and selectionNotEmpty)
-        mLinkFeatureButton.setEnabled(linkable)
-        mDeleteFeatureButton.setEnabled(editable and selectionNotEmpty)
-        mUnlinkFeatureButton.setEnabled(linkable and selectionNotEmpty)
-        mZoomToFeatureButton.setEnabled(selectionNotEmpty)
-        mToggleEditingButton.setChecked(editable)
-        mSaveEditsButton.setEnabled(editable or linkable)
+        self.mToggleEditingToolButton.setEnabled(toggleEditingButtonEnabled)
+        self.mAddFeatureToolButton.setEnabled(editable)
+        self.mLinkFeatureToolButton.setEnabled(linkable)
+        self.mDeleteFeatureToolButton.setEnabled(editable and selectionNotEmpty)
+        self.mUnlinkFeatureToolButton.setEnabled(linkable and selectionNotEmpty)
+        self.mToggleEditingToolButton.setChecked(editable)
+        self.mSaveEditsToolButton.setEnabled(editable or linkable)
 
-        mToggleEditingButton.setVisible(mLayerInSameTransactionGroup is False)
-
-        mLinkFeatureButton.setVisible(mButtonsVisibility.testFlag(QgsRelationEditorWidget.Button.Link))
-        mUnlinkFeatureButton.setVisible(
-            mButtonsVisibility.testFlag(QgsRelationEditorWidget.Button.Unlink))
-        mSaveEditsButton.setVisible(mButtonsVisibility.testFlag(
-            QgsRelationEditorWidget.Button.SaveChildEdits) and mLayerInSameTransactionGroup is False)
-        mAddFeatureButton.setVisible(
-            mButtonsVisibility.testFlag(QgsRelationEditorWidget.Button.AddChildFeature))
-        mAddFeatureGeometryButton.setVisible(mButtonsVisibility.testFlag(
-            QgsRelationEditorWidget.Button.AddChildFeature) and mEditorContext.mapCanvas() and mEditorContext.cadDockWidget() and spatial)
-        mDuplicateFeatureButton.setVisible(
-            mButtonsVisibility.testFlag(QgsRelationEditorWidget.Button.DuplicateChildFeature))
-        mDeleteFeatureButton.setVisible(
-            mButtonsVisibility.testFlag(QgsRelationEditorWidget.Button.DeleteChildFeature))
-        mZoomToFeatureButton.setVisible(mButtonsVisibility.testFlag(
-            QgsRelationEditorWidget.Button.ZoomToChildFeature) and mEditorContext.mapCanvas() and spatial)
+        self.mToggleEditingToolButton.setVisible(self.mLayerInSameTransactionGroup is False)
+        self.mSaveEditsToolButton.setVisible(self.mLayerInSameTransactionGroup is False)
 
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
+
+        self.mLayerInSameTransactionGroup = False
+        connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
+        transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
+                                                                  connectionString)
+
+        print(transactionGroup.layers())
+        print(self.relation().referencedLayer())
+        print(self.relation().referencingLayer())
+        print(self.nmRelation().referencedLayer())
+
+        if transactionGroup is None:
+            self.updateButtons()
+            return
+
+        if self.nmRelation().isValid():
+            if (self.relation().referencedLayer() in transactionGroup.layers() and
+               self.relation().referencingLayer() in transactionGroup.layers() and
+               self.nmRelation().referencedLayer() in transactionGroup.layers()):
+                self.mLayerInSameTransactionGroup = True
+        else:
+            if (self.relation().referencedLayer() in transactionGroup.layers() and
+               self.relation().referencingLayer() in transactionGroup.layers()):
+                self.mLayerInSameTransactionGroup = True
+
+        self.updateButtons()
 
     def parentFormValueChanged(self, attribute, newValue):
         pass
