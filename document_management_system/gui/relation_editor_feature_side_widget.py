@@ -213,6 +213,12 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
 
+        self._checkTransactionGroup()
+
+        self.updateButtons()
+
+    def _checkTransactionGroup(self):
+
         self.mLayerInSameTransactionGroup = False
         connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
         transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
@@ -231,8 +237,6 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
             if (self.relation().referencedLayer() in transactionGroup.layers() and
                self.relation().referencingLayer() in transactionGroup.layers()):
                 self.mLayerInSameTransactionGroup = True
-
-        self.updateButtons()
 
     def parentFormValueChanged(self, attribute, newValue):
         pass
