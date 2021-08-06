@@ -64,6 +64,8 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
                                               LastView.ListView,
                                               PluginHelper.tr('Last view used in the relation editor document side widget'))
 
+    signalCurrentViewChanged = pyqtSignal()
+
     def __init__(self, config, parent):
         super().__init__(config, parent)
         self.setupUi(self)
@@ -83,6 +85,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         # Actions
         self.actionToggleEditing = QAction(QIcon(":/images/themes/default/mActionToggleEditing.svg"),
                                            self.tr("Toggle editing mode for child layers"))
+        self.actionToggleEditing.setCheckable(True)
         self.actionSaveEdits = QAction(QIcon(":/images/themes/default/mActionSaveEdits.svg"),
                                        self.tr("Save child layer edits"))
         self.actionShowForm = QAction(QIcon(":/images/themes/default/mActionMultiEdit.svg"),
@@ -105,6 +108,12 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.mLinkFeatureToolButton.setDefaultAction(self.actionLinkFeature)
         self.mUnlinkFeatureToolButton.setDefaultAction(self.actionUnlinkFeature)
 
+        self.mListViewToolButton.setIcon(QIcon(":/images/themes/default/mIconListView.svg"))
+        self.mIconViewToolButton.setIcon(QIcon(":/images/themes/default/mActionIconView.svg"))
+        print(self.currentView)
+        self.mListViewToolButton.setChecked(self.currentView == str(RelationEditorFeatureSideWidget.LastView.ListView))
+        self.mIconViewToolButton.setChecked(self.currentView == str(RelationEditorFeatureSideWidget.LastView.IconView))
+
         # Setup QML part
         self.view = QQuickWidget()
         self.view.rootContext().setContextProperty("documentModel", self.model)
@@ -118,20 +127,35 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         # Set initial state for add / remove etc.buttons
         self.updateButtons()
 
+        # Signal slots
+        self.actionToggleEditing.triggered.connect(self.toggleEditing)
+        self.actionSaveEdits.triggered.connect(self.saveChildLayerEdits)
+        self.actionShowForm.triggered.connect(self.showDocumentForm)
+        self.actionAddFeature.triggered.connect(self.addDocument)
+        self.actionDeleteFeature.triggered.connect(self.dropDocument)
+        self.actionLinkFeature.triggered.connect(self.linkDocument)
+        self.actionUnlinkFeature.triggered.connect(self.unlinkDocument)
+        self.mListViewToolButton.toggled.connect(self.listViewToolButtonToggled)
+        self.mIconViewToolButton.toggled.connect(self.iconViewToolButtonToggled)
+
     @pyqtProperty(str)
     def currentView(self):
         return self.settingsLastView.value()
 
-    @currentView.setter
-    def currentView(self, value):
-        self.settingsLastView.setValue(value)
+    def updateCurrentView(self):
+        if self.mListViewToolButton.isChecked():
+            self.settingsLastView.setValue(str(RelationEditorFeatureSideWidget.LastView.ListView))
+        else:
+            self.settingsLastView.setValue(str(RelationEditorFeatureSideWidget.LastView.IconView))
+
+        self.signalCurrentViewChanged.emit()
 
     @pyqtProperty(QVariant)
     def currentDocumentId(self):
         return self._currentDocumentId
 
-    @currentDocumentId.setter
-    def currentDocumentId(self, value):
+    @pyqtSlot(QVariant)
+    def setCurrentDocumentId(self, value):
         self._currentDocumentId = value
         self.updateButtons()
 
@@ -181,6 +205,8 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.mToggleEditingToolButton.setChecked(editable)
         self.mSaveEditsToolButton.setEnabled(editable or linkable)
 
+        self.mShowFormToolButton.setEnabled(self._currentDocumentId is not None)
+
         self.mToggleEditingToolButton.setVisible(self.mLayerInSameTransactionGroup is False)
         self.mSaveEditsToolButton.setVisible(self.mLayerInSameTransactionGroup is False)
 
@@ -191,11 +217,6 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
         transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
                                                                   connectionString)
-
-        print(transactionGroup.layers())
-        print(self.relation().referencedLayer())
-        print(self.relation().referencingLayer())
-        print(self.nmRelation().referencedLayer())
 
         if transactionGroup is None:
             self.updateButtons()
@@ -236,6 +257,8 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot(bool)
     def toggleEditing(self, state):
 
+        print("Toggle editing {0}".format(state))
+
         super().toggleEditing(state)
         self.updateButtons()
 
@@ -252,13 +275,16 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self.addFeature()
 
-    @pyqtSlot(int)
-    def dropDocument(self, documentId):
+    @pyqtSlot()
+    def dropDocument(self):
 
         if self.checkLayerEditingMode() is False:
             return
 
-        self.deleteFeature(documentId)
+        if self._currentDocumentId is None:
+            return
+
+        self.deleteFeature(self._currentDocumentId)
 
     @pyqtSlot(str)
     def addDroppedDocument(self, fileUrl):
@@ -358,18 +384,21 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self.linkFeature()
 
-    @pyqtSlot(int)
-    def unlinkDocument(self, documentId):
+    @pyqtSlot()
+    def unlinkDocument(self):
 
         if self.checkLayerEditingMode() is False:
             return
 
-        self.unlinkFeature(documentId)
+        if self._currentDocumentId is None:
+            return
 
-    @pyqtSlot(int)
-    def showDocumentForm(self, documentId):
+        self.unlinkFeature(self._currentDocumentId)
 
-        if self.checkLayerEditingMode() is False:
+    @pyqtSlot()
+    def showDocumentForm(self):
+
+        if self._currentDocumentId is None:
             return
 
         layer = self.relation().referencingLayer()
@@ -377,9 +406,23 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
             layer = self.nmRelation().referencedLayer()
 
         showDocumentFormDialog = QgsAttributeDialog(layer,
-                                                    layer.getFeature(documentId),
+                                                    layer.getFeature(self._currentDocumentId),
                                                     False,
                                                     self,
                                                     True)
         showDocumentFormDialog.exec()
         self.updateUi()
+
+    @pyqtSlot(bool)
+    def listViewToolButtonToggled(self, checked):
+        self.mIconViewToolButton.blockSignals(True)
+        self.mIconViewToolButton.setChecked(checked is False)
+        self.mIconViewToolButton.blockSignals(False)
+        self.updateCurrentView()
+
+    @pyqtSlot(bool)
+    def iconViewToolButtonToggled(self, checked):
+        self.mListViewToolButton.blockSignals(True)
+        self.mListViewToolButton.setChecked(checked is False)
+        self.mListViewToolButton.blockSignals(False)
+        self.updateCurrentView()

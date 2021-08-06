@@ -91,16 +91,28 @@
       </spacer>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButton_3">
+      <widget class="QToolButton" name="mListViewToolButton">
+       <property name="toolTip">
+        <string>List view</string>
+       </property>
        <property name="text">
         <string>...</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toolButton">
+      <widget class="QToolButton" name="mIconViewToolButton">
+       <property name="toolTip">
+        <string>Icon view</string>
+       </property>
        <property name="text">
         <string>...</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

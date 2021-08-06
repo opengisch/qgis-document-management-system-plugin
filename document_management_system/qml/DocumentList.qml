@@ -16,11 +16,11 @@ Item {
     onSelectedDocumentIdChanged: {
         if(selectedDocumentId >= 0)
         {
-          parentWidget.currentDocumentId = selectedDocumentId
+          parentWidget.setCurrentDocumentId(selectedDocumentId)
         }
         else
         {
-          parentWidget.currentDocumentId = null
+          parentWidget.setCurrentDocumentId(null)
         }
     }
 
@@ -29,115 +29,21 @@ Item {
         colorGroup: SystemPalette.Active
     }
 
-    Component.onCompleted: {
-        console.log("Completed: " + parentWidget.currentView)
-        button_IconView.checked = parentWidget.currentView === CONST_ICON_VIEW
-        button_ListView.checked = !button_IconView.checked
+    Component.onCompleted: updateCurrentView()
+
+    Connections{
+        target: parentWidget
+        onSignalCurrentViewChanged: updateCurrentView()
     }
 
     Rectangle {
-        id: rectangle_Header
-        width: parent.width
-        height: button_IconView.height + 6
-        z: 1
-        color: myPalette.window
-
-        RowLayout
-        {
-            anchors.fill: parent
-
-            // Buttons links
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_ToggleEditing
-                tooltip: action.text
-            }
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_SaveChildLayerEdits
-                tooltip: action.text
-            }
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_ShowForm
-                tooltip: action.text
-            }
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_AddDocument
-                tooltip: action.text
-            }
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_DropDocument
-                tooltip: action.text
-            }
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_LinkDocument
-                tooltip: action.text
-            }
-            ButtonToolTip {
-                Layout.preferredWidth: height
-                display: AbstractButton.IconOnly
-                action: action_UnlinkDocument
-                tooltip: action.text
-            }
-
-            // Spacer item
-            Item { Layout.fillWidth: true }
-
-            // Buttons right
-            ButtonToolTip {
-                id: button_ListView
-                Layout.preferredWidth: height
-                tooltip: qsTr("List view")
-                icon.source: "qrc:///images/themes/default/mIconListView.svg"
-                checkable: true
-
-                onToggled: {
-                    button_IconView.checked = !button_ListView.checked
-                    if(button_IconView.checked)
-                        parentWidget.currentView = CONST_ICON_VIEW
-                    else
-                        parentWidget.currentView = CONST_LIST_VIEW
-                }
-            }
-            ButtonToolTip {
-                id: button_IconView
-                Layout.preferredWidth: height
-                tooltip: qsTr("Icon view")
-                icon.source: "qrc:///images/themes/default/mActionIconView.svg"
-                checkable: true
-
-                onToggled: {
-                    button_ListView.checked = !button_IconView.checked
-                    if(button_IconView.checked)
-                        parentWidget.currentView = CONST_ICON_VIEW
-                    else
-                        parentWidget.currentView = CONST_LIST_VIEW
-                }
-            }
-        } // RowLayout
-    } // rectangle_Header
-
-    Rectangle {
         id: rectangle_Content
-        width: parent.width
-        anchors.top: rectangle_Header.bottom
-        anchors.bottom: parent.bottom
+        anchors.fill: parent
 
         ListView {
             id: listView
             width: parent.width
             anchors.fill: parent
-            visible: button_ListView.checked
             focus: true
             model: documentModel
             highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
@@ -213,7 +119,6 @@ Item {
             id: gridView
             width: parent.width
             anchors.fill: parent
-            visible: !button_ListView.checked
             focus: true
             model: documentModel
             cellWidth: 100
@@ -333,47 +238,12 @@ Item {
     } // component_ToolTip
 
     Action {
-        id: action_ToggleEditing
-        text: qsTr("Toggle editing mode for child layers")
-        icon.source: "qrc:///images/themes/default/mActionToggleEditing.svg"
-        checkable: true
-        onTriggered: {
-            parentWidget.toggleEditing(checked)
-        }
-    }
-
-    Action {
-        id: action_SaveChildLayerEdits
-        text: qsTr("Save child layer edits")
-        icon.source: "qrc:///images/themes/default/mActionSaveEdits.svg"
-        onTriggered: {
-            parentWidget.saveChildLayerEdits()
-        }
-    }
-
-    Action {
-        id: action_AddDocument
-        text: qsTr("Add document")
-        icon.source: "qrc:///images/themes/default/symbologyAdd.svg"
-        onTriggered: {
-            parentWidget.addDocument()
-        }
-    }
-    Action {
         id: action_DropDocument
         text: qsTr("Drop document")
         icon.source: "qrc:///images/themes/default/mActionDeleteSelected.svg"
         enabled: selectedDocumentId >= 0
         onTriggered: {
-            parentWidget.unlinkDocument(selectedDocumentId);
-        }
-    }
-    Action {
-        id: action_LinkDocument
-        text: qsTr("Link document")
-        icon.source: "qrc:///images/themes/default/mActionLink.svg"
-        onTriggered: {
-            parentWidget.linkDocument()
+            parentWidget.unlinkDocument();
         }
     }
     Action {
@@ -382,7 +252,7 @@ Item {
         icon.source: "qrc:///images/themes/default/mActionUnlink.svg"
         enabled: selectedDocumentId >= 0
         onTriggered: {
-            parentWidget.unlinkDocument(selectedDocumentId);
+            parentWidget.unlinkDocument();
         }
     }
     Action {
@@ -391,7 +261,7 @@ Item {
         icon.source: "qrc:///images/themes/default/mActionMultiEdit.svg"
         enabled: selectedDocumentId >= 0
         onTriggered:  {
-            parentWidget.showDocumentForm(selectedDocumentId);
+            parentWidget.showDocumentForm();
         }
     }
 
@@ -431,6 +301,12 @@ Item {
         messageDialog.title = title;
         messageDialog.text = text;
         messageDialog.open();
+    }
+
+    function updateCurrentView()
+    {
+        gridView.visible = parentWidget.currentView === CONST_ICON_VIEW
+        listView.visible = !gridView.visible
     }
 }
 
