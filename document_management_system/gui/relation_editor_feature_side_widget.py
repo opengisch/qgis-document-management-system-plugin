@@ -270,16 +270,10 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot()
     def addDocument(self):
 
-        if self.checkLayerEditingMode() is False:
-            return
-
         self.addFeature()
 
     @pyqtSlot()
     def dropDocument(self):
-
-        if self.checkLayerEditingMode() is False:
-            return
 
         if self._currentDocumentId is None:
             return
@@ -379,16 +373,10 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot()
     def linkDocument(self):
 
-        if self.checkLayerEditingMode() is False:
-            return
-
         self.linkFeature()
 
     @pyqtSlot()
     def unlinkDocument(self):
-
-        if self.checkLayerEditingMode() is False:
-            return
 
         if self._currentDocumentId is None:
             return
