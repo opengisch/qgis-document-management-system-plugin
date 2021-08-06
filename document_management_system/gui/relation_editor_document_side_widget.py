@@ -43,6 +43,7 @@ from qgis.gui import (
     QgsAttributeDialog,
     QgsFeatureSelectionDlg
 )
+from document_management_system.core.plugin_helper import PluginHelper
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_document_side_widget.ui'))
 
@@ -79,10 +80,16 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
         self._nmRelation = QgsRelation()
         self._polymorphicRelation = QgsPolymorphicRelation()
+        self._layerInSameTransactionGroup = False
 
         self.cardinality = Cardinality.ManyToOne
 
         # Actions
+        self.actionToggleEditing = QAction(QIcon(":/images/themes/default/mActionToggleEditing.svg"),
+                                           self.tr("Toggle editing mode for child layers"))
+        self.actionToggleEditing.setCheckable(True)
+        self.actionSaveEdits = QAction(QIcon(":/images/themes/default/mActionSaveEdits.svg"),
+                                       self.tr("Save child layer edits"))
         self.actionShowForm = QAction(QIcon(":/images/themes/default/mActionMultiEdit.svg"),
                                       self.tr("Show form"))
         self.actionLinkFeature = QAction(QIcon(":/images/themes/default/mActionLink.svg"),
@@ -91,6 +98,8 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
                                            self.tr("Unlink feature"))
 
         # Tool buttons
+        self.mToggleEditingToolButton.setDefaultAction(self.actionToggleEditing)
+        self.mSaveEditsToolButton.setDefaultAction(self.actionSaveEdits)
         self.mShowFormToolButton.setDefaultAction(self.actionShowForm)
         self.mShowFormToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
         self.mLinkFeaturesToolButton.setDefaultAction(self.actionLinkFeature)
@@ -103,14 +112,16 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         self.mFeaturesTreeWidget.addAction(self.actionShowForm)
         self.mFeaturesTreeWidget.addAction(self.actionUnlinkFeature)
 
+        # Set initial state for add / remove etc.buttons
+        self.updateButtons()
+
         # Signal slots
+        self.actionToggleEditing.triggered.connect(self.toggleEditing)
+        self.actionSaveEdits.triggered.connect(self.saveChildLayerEdits)
         self.actionShowForm.triggered.connect(self.actionShowFormTriggered)
         self.actionLinkFeature.triggered.connect(self.actionLinkFeatureTriggered)
         self.actionUnlinkFeature.triggered.connect(self.actionUnlinkFeatureTriggered)
-        self.mFeaturesTreeWidget.currentItemChanged.connect(self.featuresTreeWidgetCurrentItemChanged)
-
-        # Initialize actions enabled states
-        self.featuresTreeWidgetCurrentItemChanged()
+        self.mFeaturesTreeWidget.currentItemChanged.connect(self.updateButtons)
 
     def nmRelation(self):
         return self._nmRelation
@@ -238,8 +249,12 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
         self._setCardinality()
 
+        self._checkTransactionGroup()
+        
+        self.updateButtons()
+
     def parentFormValueChanged(self, attribute, newValue):
-        pass
+        self.updateUi()
 
     def checkLayerEditingMode(self):
 
@@ -282,6 +297,17 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
         else:
             print("WARNING invalid cardinality set")
+
+    @pyqtSlot(bool)
+    def toggleEditing(self, state):
+
+        super().toggleEditing(state)
+        self.updateButtons()
+
+    @pyqtSlot()
+    def saveChildLayerEdits(self):
+
+        super().saveEdits()
 
     def actionShowFormTriggered(self):
 
@@ -412,12 +438,58 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             self.relation().referencingLayer().deleteFeature(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.LinkFeature).id())
             self.updateUi()
 
-    def featuresTreeWidgetCurrentItemChanged(self):
+    def updateButtons(self):
 
+        toggleEditingButtonEnabled = False
+        editable = False
+        linkable = False
+        spatial = False
+
+        selectionNotEmpty = True
         if (self.mFeaturesTreeWidget.currentItem() is None or
             self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature):
-            self.actionShowForm.setEnabled(False)
-            self.actionUnlinkFeature.setEnabled(False)
+            selectionNotEmpty = False
+
+        if self.relation().isValid():
+            toggleEditingButtonEnabled = self.relation().referencingLayer().supportsEditing()
+            editable = self.relation().referencingLayer().isEditable()
+            linkable = self.relation().referencingLayer().isEditable()
+            spatial = self.relation().referencingLayer().isSpatial()
+
+        if self.nmRelation().isValid():
+            toggleEditingButtonEnabled |= self.nmRelation().referencedLayer().supportsEditing()
+            editable = self.nmRelation().referencedLayer().isEditable()
+            spatial = self.nmRelation().referencedLayer().isSpatial()
+
+        self.actionToggleEditing.setEnabled(toggleEditingButtonEnabled)
+        self.actionLinkFeature.setEnabled(linkable)
+        self.actionUnlinkFeature.setEnabled(linkable and selectionNotEmpty)
+        self.actionToggleEditing.setChecked(editable)
+        self.actionSaveEdits.setEnabled(editable or linkable)
+
+        self.actionShowForm.setEnabled(selectionNotEmpty)
+
+        self.mToggleEditingToolButton.setVisible(self._layerInSameTransactionGroup is False)
+        self.mSaveEditsToolButton.setVisible(self._layerInSameTransactionGroup is False)
+
+    def _checkTransactionGroup(self):
+
+        self._layerInSameTransactionGroup = False
+        connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
+        transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
+                                                                  connectionString)
+
+        if transactionGroup is None:
+            self.updateButtons()
+            return
+
+        if self.nmRelation().isValid():
+            if (self.relation().referencedLayer() in transactionGroup.layers() and
+               self.relation().referencingLayer() in transactionGroup.layers() and
+               self.nmRelation().referencedLayer() in transactionGroup.layers()):
+                self._layerInSameTransactionGroup = True
         else:
-            self.actionShowForm.setEnabled(True)
-            self.actionUnlinkFeature.setEnabled(True)
+            if (self.relation().referencedLayer() in transactionGroup.layers() and
+               self.relation().referencingLayer() in transactionGroup.layers()):
+                self._layerInSameTransactionGroup = True
+
