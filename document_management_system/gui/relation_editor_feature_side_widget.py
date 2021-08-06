@@ -78,7 +78,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.model = DocumentModel()
 
         self._nmRelation = QgsRelation()
-        self.mLayerInSameTransactionGroup = False
+        self._layerInSameTransactionGroup = False
 
         self._currentDocumentId = None
 
@@ -205,15 +205,21 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.mToggleEditingToolButton.setChecked(editable)
         self.mSaveEditsToolButton.setEnabled(editable or linkable)
 
-        self.mShowFormToolButton.setEnabled(self._currentDocumentId is not None)
+        self.mShowFormToolButton.setEnabled(selectionNotEmpty)
 
-        self.mToggleEditingToolButton.setVisible(self.mLayerInSameTransactionGroup is False)
-        self.mSaveEditsToolButton.setVisible(self.mLayerInSameTransactionGroup is False)
+        self.mToggleEditingToolButton.setVisible(self._layerInSameTransactionGroup is False)
+        self.mSaveEditsToolButton.setVisible(self._layerInSameTransactionGroup is False)
 
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
 
-        self.mLayerInSameTransactionGroup = False
+        self._checkTransactionGroup()
+
+        self.updateButtons()
+
+    def _checkTransactionGroup(self):
+
+        self._layerInSameTransactionGroup = False
         connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
         transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
                                                                   connectionString)
@@ -226,13 +232,11 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
             if (self.relation().referencedLayer() in transactionGroup.layers() and
                self.relation().referencingLayer() in transactionGroup.layers() and
                self.nmRelation().referencedLayer() in transactionGroup.layers()):
-                self.mLayerInSameTransactionGroup = True
+                self._layerInSameTransactionGroup = True
         else:
             if (self.relation().referencedLayer() in transactionGroup.layers() and
                self.relation().referencingLayer() in transactionGroup.layers()):
-                self.mLayerInSameTransactionGroup = True
-
-        self.updateButtons()
+                self._layerInSameTransactionGroup = True
 
     def parentFormValueChanged(self, attribute, newValue):
         pass
@@ -257,8 +261,6 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot(bool)
     def toggleEditing(self, state):
 
-        print("Toggle editing {0}".format(state))
-
         super().toggleEditing(state)
         self.updateButtons()
 
@@ -270,16 +272,10 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot()
     def addDocument(self):
 
-        if self.checkLayerEditingMode() is False:
-            return
-
         self.addFeature()
 
     @pyqtSlot()
     def dropDocument(self):
-
-        if self.checkLayerEditingMode() is False:
-            return
 
         if self._currentDocumentId is None:
             return
@@ -379,16 +375,10 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot()
     def linkDocument(self):
 
-        if self.checkLayerEditingMode() is False:
-            return
-
         self.linkFeature()
 
     @pyqtSlot()
     def unlinkDocument(self):
-
-        if self.checkLayerEditingMode() is False:
-            return
 
         if self._currentDocumentId is None:
             return
