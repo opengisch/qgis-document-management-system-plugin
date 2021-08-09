@@ -272,6 +272,8 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     @pyqtSlot()
     def addDocument(self):
 
+        # Workaround because of QGIS not resetting this property after linking features
+        self.editorContext().vectorLayerTools().setForceSuppressFormPopup(False)
         self.addFeature()
 
     @pyqtSlot()
@@ -287,6 +289,9 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         if self.checkLayerEditingMode() is False:
             return
+
+        # Workaround because of QGIS not resetting this property after linking features
+        self.editorContext().vectorLayerTools().setForceSuppressFormPopup(False)
 
         layer = self.relation().referencingLayer()
         if self.nmRelation().isValid():
