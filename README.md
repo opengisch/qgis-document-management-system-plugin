@@ -3,7 +3,7 @@
 ## What
 A document management plugin to help managing relations between a document table and one or more feature tables.
 
-An example project demonstrating the usage of the plugin in project with many to many polymorphic relation is provided:
+Two example project demonstrating the usage of the plugin with different configurations are provided:
 [Demo project](demo_projects)
 
 ## Configuration
