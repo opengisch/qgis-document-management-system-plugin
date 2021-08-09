@@ -221,6 +221,7 @@ Item {
             Image {
                 width: 100
                 Layout.maximumWidth: 100
+                Layout.maximumHeight: 100
                 visible: documentIsImage
                 source: documentExists == false ? "qrc:///images/composer/missing_image.svg"
                                                 : documentIsImage ? documentURL
