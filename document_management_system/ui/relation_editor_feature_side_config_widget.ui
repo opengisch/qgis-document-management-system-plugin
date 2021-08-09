@@ -30,7 +30,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label_2">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; color:#363c42; background-color:#ffffff;&quot;&gt;An expression to the default path for documents. This is in most cases the same expression as for the attachment widget’s default path in the documents table attribute form.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; color:#363c42; background-color:#ffffff;&quot;&gt;An expression to the default path for documents. This is in most cases the same expression as for the attachment widget’s default path in the documents table attribute form. For example &lt;/span&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; font-style:italic; color:#363c42; background-color:#ffffff;&quot;&gt;@project_folder || '/Documents'&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>Documents default path</string>
@@ -50,7 +50,7 @@
    <item row="0" column="2">
     <widget class="QgsFieldExpressionWidget" name="mDocumentsPathExpressionWidget" native="true">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; color:#363c42; background-color:#ffffff;&quot;&gt;An expression to the default path for documents. This is in most cases the same expression as for the attachment widget’s default path in the documents table attribute form.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; color:#363c42; background-color:#ffffff;&quot;&gt;An expression to the default path for documents. This is in most cases the same expression as for the attachment widget’s default path in the documents table attribute form. For example &lt;/span&gt;&lt;span style=&quot; font-family:'Noto Serif','ui-serif','serif'; font-size:16px; font-style:italic; color:#363c42; background-color:#ffffff;&quot;&gt;@project_folder || '/Documents'&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
