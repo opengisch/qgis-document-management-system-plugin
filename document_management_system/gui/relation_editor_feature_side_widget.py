@@ -215,6 +215,14 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self._checkTransactionGroup()
 
+        if self.relation().isValid():
+            self.relation().referencingLayer().editingStopped.connect(self.updateButtons)
+            self.relation().referencingLayer().editingStarted.connect(self.updateButtons)
+
+        if self.nmRelation().isValid():
+            self.nmRelation().referencedLayer().editingStarted.connect(self.updateButtons)
+            self.nmRelation().referencedLayer().editingStopped.connect(self.updateButtons)
+
         self.updateButtons()
 
     def _checkTransactionGroup(self):
