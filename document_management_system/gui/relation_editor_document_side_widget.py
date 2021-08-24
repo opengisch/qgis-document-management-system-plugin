@@ -36,6 +36,7 @@ from qgis.core import (
     QgsGeometry,
     QgsFeature,
     QgsFeatureRequest,
+    QgsIconUtils,
     QgsVectorLayerUtils
 )
 from qgis.gui import (
@@ -206,6 +207,7 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
+            treeWidgetItemLayer.setIcon(0, QgsIconUtils.iconForLayer(layer))
             for feature in layerFeature[layer]:
                 treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
@@ -236,6 +238,7 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             treeWidgetItemLayer = QTreeWidgetItem(self.mFeaturesTreeWidget, [layer.name()])
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Layer)
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
+            treeWidgetItemLayer.setIcon(0, QgsIconUtils.iconForLayer(layer))
             for feature, linkFeature in layerFeature[layer]:
                 treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [str(feature.id())])
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
