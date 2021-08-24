@@ -33,7 +33,10 @@ Item {
 
     Connections{
         target: parentWidget
-        onSignalCurrentViewChanged: updateCurrentView()
+        function onSignalCurrentViewChanged()
+        {
+            updateCurrentView()
+        }
     }
 
     Rectangle {
