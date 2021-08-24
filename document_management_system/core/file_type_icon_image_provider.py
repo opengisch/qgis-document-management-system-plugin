@@ -15,10 +15,10 @@ from qgis.PyQt.QtWidgets import QFileIconProvider
 
 
 class FileTypeIconImageProvider(QQuickImageProvider):
-    
+
     def __init__(self, maxSize):
         super().__init__(QQuickImageProvider.Pixmap)
-        
+
         self._maxSize = maxSize
         self._provider = QFileIconProvider()
 

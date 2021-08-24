@@ -15,14 +15,13 @@ from qgis.PyQt.QtCore import (
     QAbstractTableModel,
     QModelIndex,
     QFileInfo,
-    QMimeDatabase,
     QDir,
     QSysInfo,
     QUrl
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFeatureRequest
-
+from document_management_system.core.preview_image_provider import PreviewImageProvider
 
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
@@ -33,14 +32,12 @@ class Role(Enum):
 
 class DocumentModel(QAbstractTableModel):
 
-    DocumentIdRole          = Qt.UserRole + 1
-    DocumentPathRole        = Qt.UserRole + 2
-    DocumentNameRole        = Qt.UserRole + 3
-    DocumentURLRole         = Qt.UserRole + 4
-    DocumentExistsRole      = Qt.UserRole + 5
-    DocumentTypeRole        = Qt.UserRole + 6
-    DocumentToolTipRole     = Qt.UserRole + 7
-    DocumentIsImageRole     = Qt.UserRole + 8
+    DocumentIdRole      = Qt.UserRole + 1
+    DocumentPathRole    = Qt.UserRole + 2
+    DocumentNameRole    = Qt.UserRole + 3
+    DocumentExistsRole  = Qt.UserRole + 4
+    DocumentToolTipRole = Qt.UserRole + 5
+    DocumentIsImageRole = Qt.UserRole + 6
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -94,9 +91,7 @@ class DocumentModel(QAbstractTableModel):
             self.DocumentIdRole:      b'DocumentId',
             self.DocumentPathRole:    b'DocumentPath',
             self.DocumentNameRole:    b'DocumentName',
-            self.DocumentURLRole:     b'DocumentURL',
             self.DocumentExistsRole:  b'DocumentExists',
-            self.DocumentTypeRole:    b'DocumentType',
             self.DocumentToolTipRole: b'DocumentToolTip',
             self.DocumentIsImageRole: b'DocumentIsImage'
         }
@@ -130,7 +125,6 @@ class DocumentModel(QAbstractTableModel):
             for documentFeature in layer.getFeatures(nmRequest):
                 feature_list.append(documentFeature)
 
-        mime_database = QMimeDatabase()
         for documentFeature in feature_list:
             documents_path = str()
             if self._documents_path:
@@ -150,13 +144,6 @@ class DocumentModel(QAbstractTableModel):
             file_info = QFileInfo(QDir(str(documents_path)),
                                   str(document_filename))
 
-            mime_type_name = str()
-            mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
-            for mime_type in mime_types:
-                if mime_type:
-                    mime_type_name = mime_type.name()
-                    break
-
             # ToolTip
             toolTipList = []
             toolTipList.append("<ul>")
@@ -166,16 +153,13 @@ class DocumentModel(QAbstractTableModel):
                                                                                documentFeature[index]))
             toolTipList.append("</ul>")
 
-
             self._document_list.append({
               self.DocumentIdRole:          documentFeature.id(),
               self.DocumentPathRole:        file_info.filePath(),
               self.DocumentNameRole:        file_info.fileName(),
-              self.DocumentURLRole:         QUrl.fromLocalFile(file_info.filePath()),
               self.DocumentExistsRole:      file_info.exists(),
-              self.DocumentTypeRole:        mime_type_name,
               self.DocumentToolTipRole:     "".join(toolTipList),
-              self.DocumentIsImageRole:     mime_type_name.startswith("image/")
+              self.DocumentIsImageRole:     PreviewImageProvider.isMimeTypeSupported(file_info.filePath())
               })
 
         self.endResetModel()

@@ -85,8 +85,6 @@ Item {
                             sourceComponent: component_ToolTip;
 
                             property string documentPath: DocumentPath
-                            property string documentURL: DocumentURL
-                            property string documentType: DocumentType
                             property string documentToolTip: DocumentToolTip
                             property bool documentExists: DocumentExists
                             property bool documentIsImage: DocumentIsImage
@@ -144,9 +142,9 @@ Item {
                             height: 60
                             anchors.horizontalCenter: parent.horizontalCenter
                             fillMode: Image.PreserveAspectFit
-                            source: DocumentIsImage ? (DocumentExists ? DocumentURL 
+                            source: DocumentIsImage ? (DocumentExists ? "image://previewImageProvider/" + documentPath
                                                                       : "qrc:///images/composer/missing_image.svg")
-                                                    : "image://fileTypeBigIconProvider/" + DocumentPath
+                                                    : "image://fileTypeBigIconProvider/" + documentPath
                         }
                         Text {
                             id: textDocumentName
@@ -167,8 +165,6 @@ Item {
                             sourceComponent: component_ToolTip;
 
                             property string documentPath: DocumentPath
-                            property string documentURL: DocumentURL
-                            property string documentType: DocumentType
                             property string documentToolTip: DocumentToolTip
                             property bool documentExists: DocumentExists
                             property bool documentIsImage: DocumentIsImage
@@ -208,9 +204,9 @@ Item {
                 Layout.maximumWidth: 100
                 Layout.maximumHeight: 100
                 visible: documentIsImage
-                source: documentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                : documentIsImage ? documentURL
-                                                                  : ""
+                source: documentExists ? (documentIsImage ? "image://previewImageProvider/" + documentPath
+                                                          : "")
+                                       : ""
                 fillMode: Image.PreserveAspectFit
             }
 

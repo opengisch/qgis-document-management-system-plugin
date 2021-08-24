@@ -49,6 +49,7 @@ from qgis.gui import (
 )
 from document_management_system.core.document_model import DocumentModel
 from document_management_system.core.file_type_icon_image_provider import FileTypeIconImageProvider
+from document_management_system.core.preview_image_provider import PreviewImageProvider
 from document_management_system.core.plugin_helper import PluginHelper
 
 WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_feature_side_widget.ui'))
@@ -111,13 +112,13 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         self.mListViewToolButton.setIcon(QIcon(":/images/themes/default/mIconListView.svg"))
         self.mIconViewToolButton.setIcon(QIcon(":/images/themes/default/mActionIconView.svg"))
-        print(self.currentView)
         self.mListViewToolButton.setChecked(self.currentView == str(RelationEditorFeatureSideWidget.LastView.ListView))
         self.mIconViewToolButton.setChecked(self.currentView == str(RelationEditorFeatureSideWidget.LastView.IconView))
 
         # Quick image providers
+        self._previewImageProvider = PreviewImageProvider()
         self._fileTypeSmallIconProvider = FileTypeIconImageProvider(32)
-        self._fileTypeBigIconProvider = FileTypeIconImageProvider(100)  
+        self._fileTypeBigIconProvider = FileTypeIconImageProvider(100)
 
         # Setup QML part
         self.view = QQuickWidget()
@@ -125,6 +126,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.view.rootContext().setContextProperty("parentWidget", self)
         self.view.rootContext().setContextProperty("CONST_LIST_VIEW", str(RelationEditorFeatureSideWidget.LastView.ListView))
         self.view.rootContext().setContextProperty("CONST_ICON_VIEW", str(RelationEditorFeatureSideWidget.LastView.IconView))
+        self.view.engine().addImageProvider("previewImageProvider", self._previewImageProvider)
         self.view.engine().addImageProvider("fileTypeSmallIconProvider", self._fileTypeSmallIconProvider)
         self.view.engine().addImageProvider("fileTypeBigIconProvider", self._fileTypeBigIconProvider)
         self.view.setSource(QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), '../qml/DocumentList.qml')))
