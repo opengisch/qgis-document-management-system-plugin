@@ -60,19 +60,17 @@ Item {
                     property int documentId: DocumentId
                     property string documentPath: DocumentPath
 
-                    Button {
-                        id: buttonIcon
+                    Image {
+                        id: imageFileTypeIcon
                         width: parent.height
                         height: parent.height
-                        flat: true
-                        icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                           : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
-                                                                                : DocumentIcon
+                        fillMode: Image.PreserveAspectFit
+                        source: "image://fileTypeSmallIconProvider/" + DocumentPath
                     }
 
                     Text {
                         id: textDocumentName
-                        anchors.left: buttonIcon.right
+                        anchors.left: imageFileTypeIcon.right
                         height: parent.height
                         text: DocumentName
                         verticalAlignment: Text.AlignVCenter
@@ -141,27 +139,14 @@ Item {
                     Column {
                         anchors.fill: parent
 
-                        Button {
-                            width: parent.width
-                            height: 60
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: !DocumentIsImage && DocumentIcon != ""
-                            flat: true
-                            icon.name: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                               : DocumentIcon == "" ? "qrc:///images/themes/default/mIconFile.svg"
-                                                                                    : DocumentIcon
-                            icon.height: height
-                            icon.width: height
-                        }
                         Image {
                             width: parent.width
                             height: 60
                             anchors.horizontalCenter: parent.horizontalCenter
-                            visible: DocumentIsImage || DocumentIcon == ""
-                            source: DocumentExists == false ? "qrc:///images/composer/missing_image.svg"
-                                                            : DocumentIsImage ? DocumentURL
-                                                                              : ""
                             fillMode: Image.PreserveAspectFit
+                            source: DocumentIsImage ? (DocumentExists ? DocumentURL 
+                                                                      : "qrc:///images/composer/missing_image.svg")
+                                                    : "image://fileTypeBigIconProvider/" + DocumentPath
                         }
                         Text {
                             id: textDocumentName

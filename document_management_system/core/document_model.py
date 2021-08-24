@@ -40,8 +40,7 @@ class DocumentModel(QAbstractTableModel):
     DocumentExistsRole      = Qt.UserRole + 5
     DocumentTypeRole        = Qt.UserRole + 6
     DocumentToolTipRole     = Qt.UserRole + 7
-    DocumentIconRole        = Qt.UserRole + 8
-    DocumentIsImageRole     = Qt.UserRole + 9
+    DocumentIsImageRole     = Qt.UserRole + 8
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -99,7 +98,6 @@ class DocumentModel(QAbstractTableModel):
             self.DocumentExistsRole:  b'DocumentExists',
             self.DocumentTypeRole:    b'DocumentType',
             self.DocumentToolTipRole: b'DocumentToolTip',
-            self.DocumentIconRole:    b'DocumentIcon',
             self.DocumentIsImageRole: b'DocumentIsImage'
         }
 
@@ -152,13 +150,11 @@ class DocumentModel(QAbstractTableModel):
             file_info = QFileInfo(QDir(str(documents_path)),
                                   str(document_filename))
 
-            icon_name = str()
             mime_type_name = str()
             mime_types = mime_database.mimeTypesForFileName(file_info.filePath())
             for mime_type in mime_types:
                 if mime_type:
                     mime_type_name = mime_type.name()
-                    icon_name = mime_type.iconName()
                     break
 
             # ToolTip
@@ -179,7 +175,6 @@ class DocumentModel(QAbstractTableModel):
               self.DocumentExistsRole:      file_info.exists(),
               self.DocumentTypeRole:        mime_type_name,
               self.DocumentToolTipRole:     "".join(toolTipList),
-              self.DocumentIconRole:        icon_name,
               self.DocumentIsImageRole:     mime_type_name.startswith("image/")
               })
 
