@@ -22,7 +22,6 @@ from qgis.gui import (
 from document_management_system.core.settings_registry import SettingsRegistry
 from document_management_system.gui.relation_editor_feature_side_widget_factory import RelationEditorFeatureSideWidgetFactory
 from document_management_system.gui.relation_editor_document_side_widget_factory import RelationEditorDocumentSideWidgetFactory
-from document_management_system.gui.configuration_wizard.configuration_wizard import ConfigurationWizard
 
 DEBUG = True
 
@@ -60,13 +59,3 @@ class DocumentManagementSystemRelationEditorPlugin(QObject):
 
         QgsGui.relationWidgetRegistry().removeRelationWidget(RelationEditorFeatureSideWidgetFactory.type())
         QgsGui.relationWidgetRegistry().removeRelationWidget(RelationEditorDocumentSideWidgetFactory.type())
-
-        #if qgisversion > 3.20:
-        #    QgsApplication.settingsRegistryCore().removeSubRegistry(self.settingsRegistry)
-
-    def showConfigurationWizard(self):
-        """
-        Show configuration wizard
-        """
-        configurationWizard = ConfigurationWizard(self.interface)
-        configurationWizard.exec_()
