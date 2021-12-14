@@ -15,24 +15,21 @@ from enum import (
 )
 from qgis.PyQt.QtCore import (
     Qt,
-    QObject,
+    QTimer,
     pyqtSlot
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
-    QMessageBox,
-    QTreeWidgetItem,
     QAction,
-    QInputDialog
+    QInputDialog,
+    QMessageBox,
+    QTreeWidgetItem
 )
 from qgis.PyQt.uic import loadUiType
 from qgis.core import (
     QgsProject,
     QgsRelation,
     QgsPolymorphicRelation,
-    QgsExpression,
-    QgsExpressionContext,
-    QgsExpressionContextUtils,
     QgsGeometry,
     QgsFeature,
     QgsFeatureRequest,
@@ -72,6 +69,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
     def __init__(self, config, parent):
         super().__init__(config, parent)
+        self._updateUiTimer = QTimer()
+        self._updateUiTimer.setSingleShot(True)
+        self._updateUiTimer.timeout.connect(self.updateUiTimeout)
         self.setupUi(self)
 
         self.polymorphicRelationEnabled = False
@@ -144,7 +144,10 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         self._setCardinality()
 
     def updateUi(self):
-        print('DocumentRelationEditorDocumentSideWidget.updateUi')
+        self._updateUiTimer.start(200)
+
+    def updateUiTimeout(self):
+        print('DocumentRelationEditorDocumentSideWidget.updateUiTimeout')
 
         self.mFeaturesTreeWidget.clear()
 

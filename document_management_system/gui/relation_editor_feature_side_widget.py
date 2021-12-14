@@ -12,9 +12,8 @@ from PyQt5.QtQuickWidgets import QQuickWidget
 import os
 from enum import Enum
 from qgis.PyQt.QtCore import (
-    QObject,
     QDir,
-    QSysInfo,
+    QTimer,
     QUrl,
     QVariant,
     pyqtSignal,
@@ -24,24 +23,18 @@ from qgis.PyQt.QtCore import (
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
     QAction,
-    QMessageBox,
-    QVBoxLayout
+    QMessageBox
 )
 from qgis.PyQt.uic import loadUiType
 from qgis.core import (
-    QgsApplication,
-    QgsProject,
-    QgsRelation,
-    QgsPolymorphicRelation,
     QgsExpression,
     QgsExpressionContext,
     QgsExpressionContextUtils,
-    QgsFields,
-    QgsVectorLayerTools,
-    QgsVectorLayerUtils,
     QgsGeometry,
-    QgsFeature,
-    QgsSettingsEntryString
+    QgsProject,
+    QgsRelation,
+    QgsSettingsEntryString,
+    QgsVectorLayerUtils
 )
 from qgis.gui import (
     QgsAbstractRelationEditorWidget,
@@ -70,6 +63,9 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
     def __init__(self, config, parent):
         super().__init__(config, parent)
+        self._updateUiTimer = QTimer()
+        self._updateUiTimer.setSingleShot(True)
+        self._updateUiTimer.timeout.connect(self.updateUiTimeout)
         self.setupUi(self)
 
         print('DocumentRelationEditorFeatureSideWidget.__init__')
@@ -181,7 +177,9 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.document_filename = config['document_filename']
 
     def updateUi(self):
-        print('DocumentRelationEditorFeatureSideWidget.updateUi')
+        self._updateUiTimer.start(200)
+
+    def updateUiTimeout(self):
         self.model.init(self.relation(),
                         self.nmRelation(),
                         self.feature(),
