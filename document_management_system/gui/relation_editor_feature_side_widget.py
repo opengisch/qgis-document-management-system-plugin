@@ -240,7 +240,6 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
                                                                   connectionString)
 
         if transactionGroup is None:
-            self.updateButtons()
             return
 
         if self.nmRelation().isValid():
