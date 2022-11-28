@@ -223,9 +223,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
             return
 
         connectionString = PluginHelper.connectionString(referenced_layer.source())
-        transactionGroup = QgsProject.instance().transactionGroup(
-            self.relation().referencedLayer().providerType(), connectionString
-        )
+        transactionGroup = QgsProject.instance().transactionGroup(referenced_layer.providerType(), connectionString)
 
         if transactionGroup is None:
             return
