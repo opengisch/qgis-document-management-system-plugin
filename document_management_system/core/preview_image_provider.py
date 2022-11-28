@@ -10,10 +10,7 @@
 
 from PyQt5.QtQuick import QQuickImageProvider
 from qgis.PyQt.QtCore import QMimeDatabase
-from qgis.PyQt.QtGui import (
-    QImage,
-    QImageReader
-)
+from qgis.PyQt.QtGui import QImageReader
 
 
 class PreviewImageProvider(QQuickImageProvider):

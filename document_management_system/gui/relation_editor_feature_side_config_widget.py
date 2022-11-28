@@ -12,11 +12,10 @@ import os
 from qgis.PyQt.uic import loadUiType
 from qgis.gui import QgsAbstractRelationEditorConfigWidget
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_feature_side_config_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), "../ui/relation_editor_feature_side_config_widget.ui"))
 
 
 class RelationEditorFeatureSideConfigWidget(QgsAbstractRelationEditorConfigWidget, WidgetUi):
-
     def __init__(self, relation, parent):
         super().__init__(relation, parent)
         self.setupUi(self)
@@ -25,13 +24,13 @@ class RelationEditorFeatureSideConfigWidget(QgsAbstractRelationEditorConfigWidge
 
     def config(self):
         return {
-            'documents_path': self.mDocumentsPathExpressionWidget.currentField()[0],
-            'document_filename': self.mDocumentFilenameExpressionWidget.currentField()[0],
+            "documents_path": self.mDocumentsPathExpressionWidget.currentField()[0],
+            "document_filename": self.mDocumentFilenameExpressionWidget.currentField()[0],
         }
 
     def setConfig(self, config):
-        self.mDocumentsPathExpressionWidget.setField(config.get('documents_path'))
-        self.mDocumentFilenameExpressionWidget.setField(config.get('document_filename'))
+        self.mDocumentsPathExpressionWidget.setField(config.get("documents_path"))
+        self.mDocumentFilenameExpressionWidget.setField(config.get("document_filename"))
 
     def setNmRelation(self, nmRelation):
 

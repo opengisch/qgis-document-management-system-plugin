@@ -10,12 +10,10 @@
 
 from PyQt5.QtQuick import QQuickImageProvider
 from qgis.PyQt.QtCore import QFileInfo
-from qgis.PyQt.QtGui import QPixmap
 from qgis.PyQt.QtWidgets import QFileIconProvider
 
 
 class FileTypeIconImageProvider(QQuickImageProvider):
-
     def __init__(self, maxSize):
         super().__init__(QQuickImageProvider.Pixmap)
 

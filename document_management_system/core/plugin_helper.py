@@ -29,8 +29,7 @@ class PluginHelper(object):
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate(PluginHelper.PLUGIN_SLUG,
-                                          message)
+        return QCoreApplication.translate(PluginHelper.PLUGIN_SLUG, message)
 
     @staticmethod
     def removeLayerIdOrName(layerUri):
@@ -38,7 +37,7 @@ class PluginHelper(object):
         for toRemove in ["|layername=", "|layerid="]:
             pos = layerUri.find(toRemove)
             if pos >= 0:
-                end = layerUri.find('|', pos + 1)
+                end = layerUri.find("|", pos + 1)
                 if end >= 0:
                     layerUriStripped = layerUri[pos:end]
                 else:
@@ -56,4 +55,3 @@ class PluginHelper(object):
             connString = PluginHelper.removeLayerIdOrName(layerUri)
 
         return connString
-

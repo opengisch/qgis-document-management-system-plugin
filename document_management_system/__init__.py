@@ -15,5 +15,8 @@ def classFactory(iface):
     :type iface: QgsInterface
     """
     #
-    from document_management_system.core.document_management_system_relation_editor_plugin import DocumentManagementSystemRelationEditorPlugin
+    from document_management_system.core.document_management_system_relation_editor_plugin import (
+        DocumentManagementSystemRelationEditorPlugin,
+    )
+
     return DocumentManagementSystemRelationEditorPlugin(iface)
