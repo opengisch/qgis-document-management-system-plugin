@@ -9,19 +9,17 @@
 # -----------------------------------------------------------
 
 from enum import Enum
-from qgis.PyQt.QtCore import (
-    Qt,
-    QObject,
-    QAbstractTableModel,
-    QModelIndex,
-    QFileInfo,
-    QDir,
-    QSysInfo,
-    QUrl
+from qgis.PyQt.QtCore import Qt, QObject, QAbstractTableModel, QModelIndex, QFileInfo, QDir
+from qgis.core import (
+    QgsRelation,
+    QgsFeature,
+    QgsExpression,
+    QgsExpressionContext,
+    QgsExpressionContextUtils,
+    QgsFeatureRequest,
 )
-from qgis.PyQt.QtGui import QIcon
-from qgis.core import QgsRelation, QgsFeature, QgsExpression, QgsExpressionContext, QgsExpressionContextUtils, QgsFeatureRequest
 from document_management_system.core.preview_image_provider import PreviewImageProvider
+
 
 class Role(Enum):
     RelationRole = Qt.UserRole + 1
@@ -32,10 +30,10 @@ class Role(Enum):
 
 class DocumentModel(QAbstractTableModel):
 
-    DocumentIdRole      = Qt.UserRole + 1
-    DocumentPathRole    = Qt.UserRole + 2
-    DocumentNameRole    = Qt.UserRole + 3
-    DocumentExistsRole  = Qt.UserRole + 4
+    DocumentIdRole = Qt.UserRole + 1
+    DocumentPathRole = Qt.UserRole + 2
+    DocumentNameRole = Qt.UserRole + 3
+    DocumentExistsRole = Qt.UserRole + 4
     DocumentToolTipRole = Qt.UserRole + 5
     DocumentIsImageRole = Qt.UserRole + 6
 
@@ -48,12 +46,14 @@ class DocumentModel(QAbstractTableModel):
         self._feature = QgsFeature()
         self._document_list = []
 
-    def init(self,
-             relation: QgsRelation,
-             nmRelation: QgsRelation,
-             feature: QgsFeature,
-             documents_path: str,
-             document_filename: str):
+    def init(
+        self,
+        relation: QgsRelation,
+        nmRelation: QgsRelation,
+        feature: QgsFeature,
+        documents_path: str,
+        document_filename: str,
+    ):
         self._relation = relation
         self._nmRelation = nmRelation
         self._documents_path = documents_path
@@ -88,12 +88,12 @@ class DocumentModel(QAbstractTableModel):
 
     def roleNames(self):
         return {
-            self.DocumentIdRole:      b'DocumentId',
-            self.DocumentPathRole:    b'DocumentPath',
-            self.DocumentNameRole:    b'DocumentName',
-            self.DocumentExistsRole:  b'DocumentExists',
-            self.DocumentToolTipRole: b'DocumentToolTip',
-            self.DocumentIsImageRole: b'DocumentIsImage'
+            self.DocumentIdRole: b"DocumentId",
+            self.DocumentPathRole: b"DocumentPath",
+            self.DocumentNameRole: b"DocumentName",
+            self.DocumentExistsRole: b"DocumentExists",
+            self.DocumentToolTipRole: b"DocumentToolTip",
+            self.DocumentIsImageRole: b"DocumentIsImage",
         }
 
     def reloadData(self):
@@ -141,25 +141,27 @@ class DocumentModel(QAbstractTableModel):
                 context.appendScopes(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
                 context.setFeature(documentFeature)
                 document_filename = exp.evaluate(context)
-            file_info = QFileInfo(QDir(str(documents_path)),
-                                  str(document_filename))
+            file_info = QFileInfo(QDir(str(documents_path)), str(document_filename))
 
             # ToolTip
             toolTipList = []
             toolTipList.append("<ul>")
             for field in documentFeature.fields():
                 index = documentFeature.fields().indexFromName(field.name())
-                toolTipList.append("<li><strong>{0}</strong>: {1}</li>".format(field.displayName(),
-                                                                               documentFeature[index]))
+                toolTipList.append(
+                    "<li><strong>{0}</strong>: {1}</li>".format(field.displayName(), documentFeature[index])
+                )
             toolTipList.append("</ul>")
 
-            self._document_list.append({
-              self.DocumentIdRole:          documentFeature.id(),
-              self.DocumentPathRole:        file_info.filePath(),
-              self.DocumentNameRole:        file_info.fileName(),
-              self.DocumentExistsRole:      file_info.exists(),
-              self.DocumentToolTipRole:     "".join(toolTipList),
-              self.DocumentIsImageRole:     PreviewImageProvider.isMimeTypeSupported(file_info.filePath())
-              })
+            self._document_list.append(
+                {
+                    self.DocumentIdRole: documentFeature.id(),
+                    self.DocumentPathRole: file_info.filePath(),
+                    self.DocumentNameRole: file_info.fileName(),
+                    self.DocumentExistsRole: file_info.exists(),
+                    self.DocumentToolTipRole: "".join(toolTipList),
+                    self.DocumentIsImageRole: PreviewImageProvider.isMimeTypeSupported(file_info.filePath()),
+                }
+            )
 
         self.endResetModel()

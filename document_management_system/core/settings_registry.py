@@ -13,7 +13,6 @@ from document_management_system.gui.relation_editor_feature_side_widget import R
 
 
 class SettingsRegistry(QgsSettingsRegistry):
-
     def __init__(self):
         super().__init__()
 

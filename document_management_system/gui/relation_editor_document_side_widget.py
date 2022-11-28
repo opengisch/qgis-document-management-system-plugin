@@ -9,22 +9,10 @@
 # -----------------------------------------------------------
 
 import os
-from enum import (
-    Enum,
-    IntEnum
-)
-from qgis.PyQt.QtCore import (
-    Qt,
-    QTimer,
-    pyqtSlot
-)
+from enum import Enum, IntEnum
+from qgis.PyQt.QtCore import Qt, QTimer, pyqtSlot
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import (
-    QAction,
-    QInputDialog,
-    QMessageBox,
-    QTreeWidgetItem
-)
+from qgis.PyQt.QtWidgets import QAction, QInputDialog, QMessageBox, QTreeWidgetItem
 from qgis.PyQt.uic import loadUiType
 from qgis.core import (
     QgsProject,
@@ -34,16 +22,12 @@ from qgis.core import (
     QgsFeature,
     QgsFeatureRequest,
     QgsIconUtils,
-    QgsVectorLayerUtils
+    QgsVectorLayerUtils,
 )
-from qgis.gui import (
-    QgsAbstractRelationEditorWidget,
-    QgsAttributeDialog,
-    QgsFeatureSelectionDlg
-)
+from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog, QgsFeatureSelectionDlg
 from document_management_system.core.plugin_helper import PluginHelper
 
-WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), '../ui/relation_editor_document_side_widget.ui'))
+WidgetUi, _ = loadUiType(os.path.join(os.path.dirname(__file__), "../ui/relation_editor_document_side_widget.ui"))
 
 
 class Cardinality(Enum):
@@ -66,7 +50,6 @@ class TreeWidgetItemRole(IntEnum):
 
 
 class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
-
     def __init__(self, config, parent):
         super().__init__(config, parent)
         self._updateUiTimer = QTimer()
@@ -86,17 +69,18 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         self.cardinality = Cardinality.ManyToOne
 
         # Actions
-        self.actionToggleEditing = QAction(QIcon(":/images/themes/default/mActionToggleEditing.svg"),
-                                           self.tr("Toggle editing mode for child layers"))
+        self.actionToggleEditing = QAction(
+            QIcon(":/images/themes/default/mActionToggleEditing.svg"), self.tr("Toggle editing mode for child layers")
+        )
         self.actionToggleEditing.setCheckable(True)
-        self.actionSaveEdits = QAction(QIcon(":/images/themes/default/mActionSaveEdits.svg"),
-                                       self.tr("Save child layer edits"))
-        self.actionShowForm = QAction(QIcon(":/images/themes/default/mActionMultiEdit.svg"),
-                                      self.tr("Show form"))
-        self.actionLinkFeature = QAction(QIcon(":/images/themes/default/mActionLink.svg"),
-                                         self.tr("Link feature"))
-        self.actionUnlinkFeature = QAction(QIcon(":/images/themes/default/mActionUnlink.svg"),
-                                           self.tr("Unlink feature"))
+        self.actionSaveEdits = QAction(
+            QIcon(":/images/themes/default/mActionSaveEdits.svg"), self.tr("Save child layer edits")
+        )
+        self.actionShowForm = QAction(QIcon(":/images/themes/default/mActionMultiEdit.svg"), self.tr("Show form"))
+        self.actionLinkFeature = QAction(QIcon(":/images/themes/default/mActionLink.svg"), self.tr("Link feature"))
+        self.actionUnlinkFeature = QAction(
+            QIcon(":/images/themes/default/mActionUnlink.svg"), self.tr("Unlink feature")
+        )
 
         # Tool buttons
         self.mToggleEditingToolButton.setDefaultAction(self.actionToggleEditing)
@@ -128,18 +112,18 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         return self._nmRelation
 
     def config(self):
-        return {
-
-        }
+        return {}
 
     def setConfig(self, config):
-        self.polymorphicRelationEnabled = config['polymorphic_relation_enabled']
-        self.polymorphicRelationId = config['polymorphic_relation_id']
+        self.polymorphicRelationEnabled = config["polymorphic_relation_enabled"]
+        self.polymorphicRelationId = config["polymorphic_relation_id"]
 
         if self.polymorphicRelationEnabled is False:
             return
 
-        self._polymorphicRelation = QgsProject.instance().relationManager().polymorphicRelation(self.polymorphicRelationId)
+        self._polymorphicRelation = (
+            QgsProject.instance().relationManager().polymorphicRelation(self.polymorphicRelationId)
+        )
 
         self._setCardinality()
 
@@ -147,7 +131,7 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         self._updateUiTimer.start(200)
 
     def updateUiTimeout(self):
-        print('DocumentRelationEditorDocumentSideWidget.updateUiTimeout')
+        print("DocumentRelationEditorDocumentSideWidget.updateUiTimeout")
 
         self.mFeaturesTreeWidget.clear()
 
@@ -170,7 +154,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         layer = self.relation().referencingLayer()
         request = self.relation().getRelatedFeaturesRequest(self.feature())
         for feature in layer.getFeatures(request):
-            treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [QgsVectorLayerUtils.getFeatureDisplayString(layer, feature)])
+            treeWidgetItem = QTreeWidgetItem(
+                self.mFeaturesTreeWidget, [QgsVectorLayerUtils.getFeatureDisplayString(layer, feature)]
+            )
             treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
             treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
             treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
@@ -189,7 +175,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
             finalLayer = self.nmRelation().referencedLayer()
             for finalFeature in finalLayer.getFeatures(nmRequest):
-                treeWidgetItem = QTreeWidgetItem(self.mFeaturesTreeWidget, [QgsVectorLayerUtils.getFeatureDisplayString(finalLayer, finalFeature)])
+                treeWidgetItem = QTreeWidgetItem(
+                    self.mFeaturesTreeWidget, [QgsVectorLayerUtils.getFeatureDisplayString(finalLayer, finalFeature)]
+                )
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, finalLayer)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
@@ -212,7 +200,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
             treeWidgetItemLayer.setIcon(0, QgsIconUtils.iconForLayer(layer))
             for feature in layerFeature[layer]:
-                treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [QgsVectorLayerUtils.getFeatureDisplayString(layerFeature, feature)])
+                treeWidgetItem = QTreeWidgetItem(
+                    treeWidgetItemLayer, [QgsVectorLayerUtils.getFeatureDisplayString(layerFeature, feature)]
+                )
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
@@ -243,7 +233,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             treeWidgetItemLayer.setData(0, TreeWidgetItemRole.Layer, layer)
             treeWidgetItemLayer.setIcon(0, QgsIconUtils.iconForLayer(layer))
             for feature, linkFeature in layerFeature[layer]:
-                treeWidgetItem = QTreeWidgetItem(treeWidgetItemLayer, [QgsVectorLayerUtils.getFeatureDisplayString(layer, feature)])
+                treeWidgetItem = QTreeWidgetItem(
+                    treeWidgetItemLayer, [QgsVectorLayerUtils.getFeatureDisplayString(layer, feature)]
+                )
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Type, TreeWidgetItemType.Feature)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Layer, layer)
                 treeWidgetItem.setData(0, TreeWidgetItemRole.Feature, feature)
@@ -273,39 +265,45 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
     def checkLayerEditingMode(self):
 
         if self.relation().referencingLayer().isEditable() is False:
-            QMessageBox.critical(self,
-                                 self.tr("Layer not editable"),
-                                 self.tr("Layer '{0}' is not in editing mode.").format(self.relation().referencingLayer().name()))
+            QMessageBox.critical(
+                self,
+                self.tr("Layer not editable"),
+                self.tr("Layer '{0}' is not in editing mode.").format(self.relation().referencingLayer().name()),
+            )
             return False
 
         if self.nmRelation().isValid():
             if self.nmRelation().referencedLayer().isEditable() is False:
-                QMessageBox.critical(self,
-                                     self.tr("Layer not editable"),
-                                     self.tr("Layer '{0}' is not in editing mode.").format(self.nmRelation().referencedLayer().name()))
+                QMessageBox.critical(
+                    self,
+                    self.tr("Layer not editable"),
+                    self.tr("Layer '{0}' is not in editing mode.").format(self.nmRelation().referencedLayer().name()),
+                )
                 return False
 
         return True
 
     def _setCardinality(self):
 
-        if (self.nmRelation().isValid() is False and
-            self.polymorphicRelationEnabled is False):
+        if self.nmRelation().isValid() is False and self.polymorphicRelationEnabled is False:
             self.cardinality = Cardinality.ManyToOne
             return
 
-        elif (self.nmRelation().isValid() and
-              self.polymorphicRelationEnabled is False):
+        elif self.nmRelation().isValid() and self.polymorphicRelationEnabled is False:
             self.cardinality = Cardinality.ManyToMany
             return
 
-        elif (self.polymorphicRelationEnabled and
-              self._polymorphicRelation.referencingLayer().id() == self.relation().referencedLayer().id()):
+        elif (
+            self.polymorphicRelationEnabled
+            and self._polymorphicRelation.referencingLayer().id() == self.relation().referencedLayer().id()
+        ):
             self.cardinality = Cardinality.ManyToOnePolymorphic
             return
 
-        elif (self.polymorphicRelationEnabled and
-              self._polymorphicRelation.referencingLayer().id() == self.relation().referencingLayer().id()):
+        elif (
+            self.polymorphicRelationEnabled
+            and self._polymorphicRelation.referencingLayer().id() == self.relation().referencingLayer().id()
+        ):
             self.cardinality = Cardinality.ManyToManyPolymorphic
             return
 
@@ -326,22 +324,20 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
     def actionShowFormTriggered(self):
 
         if self.mFeaturesTreeWidget.currentItem() is None:
-            QMessageBox.critical(self,
-                                 self.tr("No feature selected"),
-                                 self.tr("Please select a feature."))
+            QMessageBox.critical(self, self.tr("No feature selected"), self.tr("Please select a feature."))
             return
 
         if self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature:
-            QMessageBox.critical(self,
-                                 self.tr("Selected item is not a feature"),
-                                 self.tr("Please select a feature."))
+            QMessageBox.critical(self, self.tr("Selected item is not a feature"), self.tr("Please select a feature."))
             return
 
-        showDocumentFormDialog = QgsAttributeDialog(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Layer),
-                                                    self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Feature),
-                                                    False,
-                                                    self,
-                                                    True)
+        showDocumentFormDialog = QgsAttributeDialog(
+            self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Layer),
+            self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Feature),
+            False,
+            self,
+            True,
+        )
         showDocumentFormDialog.exec()
         self.updateUi()
 
@@ -373,18 +369,15 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         for relation in self._polymorphicRelation.generateRelations():
             nmRelations[relation.referencedLayer().name()] = relation
 
-        layerName, ok = QInputDialog.getItem(self,
-                                             self.tr("Please selct a layer"),
-                                             self.tr("Layer:"),
-                                             nmRelations.keys())
+        layerName, ok = QInputDialog.getItem(
+            self, self.tr("Please selct a layer"), self.tr("Layer:"), nmRelations.keys()
+        )
 
         if not ok:
             return
 
         nmRelation = nmRelations[layerName]
-        selectionDlg = QgsFeatureSelectionDlg(nmRelation.referencedLayer(),
-                                              self.editorContext(),
-                                              self)
+        selectionDlg = QgsFeatureSelectionDlg(nmRelation.referencedLayer(), self.editorContext(), self)
         selectionDlg.setWindowTitle(self.tr("Please select the features to link. Layer: {0}").format(layerName))
         if not selectionDlg.exec():
             return
@@ -393,7 +386,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         fields = self.relation().referencingLayer().fields()
 
         linkAttributes = dict()
-        linkAttributes[fields.indexFromName(self._polymorphicRelation.referencedLayerField())] = self._polymorphicRelation.layerRepresentation(nmRelation.referencedLayer())
+        linkAttributes[
+            fields.indexFromName(self._polymorphicRelation.referencedLayerField())
+        ] = self._polymorphicRelation.layerRepresentation(nmRelation.referencedLayer())
         for key in self.relation().fieldPairs():
             linkAttributes[fields.indexOf(key)] = self.feature().attribute(self.relation().fieldPairs()[key])
 
@@ -401,19 +396,19 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         context = self.relation().referencingLayer().createExpressionContext()
 
         featureIterator = nmRelation.referencedLayer().getFeatures(
-                                  QgsFeatureRequest()
-                                  .setFilterFids(selectionDlg.selectedFeatures())
-                                  .setSubsetOfAttributes(nmRelation.referencedFields()))
+            QgsFeatureRequest()
+            .setFilterFids(selectionDlg.selectedFeatures())
+            .setSubsetOfAttributes(nmRelation.referencedFields())
+        )
         relatedFeature = QgsFeature()
         newFeatures = []
         while featureIterator.nextFeature(relatedFeature):
             for key in nmRelation.fieldPairs():
                 linkAttributes[fields.indexOf(key)] = relatedFeature.attribute(nmRelation.fieldPairs()[key])
 
-            linkFeature = QgsVectorLayerUtils.createFeature(self.relation().referencingLayer(),
-                                                            QgsGeometry(),
-                                                            linkAttributes,
-                                                            context)
+            linkFeature = QgsVectorLayerUtils.createFeature(
+                self.relation().referencingLayer(), QgsGeometry(), linkAttributes, context
+            )
             newFeatures.append(linkFeature)
 
         self.relation().referencingLayer().addFeatures(newFeatures)
@@ -428,15 +423,11 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             return
 
         if self.mFeaturesTreeWidget.currentItem() is None:
-            QMessageBox.critical(self,
-                                 self.tr("No feature selected"),
-                                 self.tr("Please select a feature to unlink."))
+            QMessageBox.critical(self, self.tr("No feature selected"), self.tr("Please select a feature to unlink."))
             return
 
         if self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature:
-            QMessageBox.critical(self,
-                                 self.tr("Selected item is not a feature"),
-                                 self.tr("Please select a feature."))
+            QMessageBox.critical(self, self.tr("Selected item is not a feature"), self.tr("Please select a feature."))
             return
 
         if self.cardinality == Cardinality.ManyToOne:
@@ -449,7 +440,9 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
             print("unlink ManyToOnePolymorphic")
 
         if self.cardinality == Cardinality.ManyToManyPolymorphic:
-            self.relation().referencingLayer().deleteFeature(self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.LinkFeature).id())
+            self.relation().referencingLayer().deleteFeature(
+                self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.LinkFeature).id()
+            )
             self.updateUi()
 
     def updateButtons(self):
@@ -457,23 +450,22 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         toggleEditingButtonEnabled = False
         editable = False
         linkable = False
-        spatial = False
 
         selectionNotEmpty = True
-        if (self.mFeaturesTreeWidget.currentItem() is None or
-            self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature):
+        if (
+            self.mFeaturesTreeWidget.currentItem() is None
+            or self.mFeaturesTreeWidget.currentItem().data(0, TreeWidgetItemRole.Type) != TreeWidgetItemType.Feature
+        ):
             selectionNotEmpty = False
 
         if self.relation().isValid():
             toggleEditingButtonEnabled = self.relation().referencingLayer().supportsEditing()
             editable = self.relation().referencingLayer().isEditable()
             linkable = self.relation().referencingLayer().isEditable()
-            spatial = self.relation().referencingLayer().isSpatial()
 
         if self.nmRelation().isValid():
             toggleEditingButtonEnabled |= self.nmRelation().referencedLayer().supportsEditing()
             editable = self.nmRelation().referencedLayer().isEditable()
-            spatial = self.nmRelation().referencedLayer().isSpatial()
 
         self.actionToggleEditing.setEnabled(toggleEditingButtonEnabled)
         self.actionLinkFeature.setEnabled(linkable)
@@ -490,20 +482,24 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
 
         self._layerInSameTransactionGroup = False
         connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
-        transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
-                                                                  connectionString)
+        transactionGroup = QgsProject.instance().transactionGroup(
+            self.relation().referencedLayer().providerType(), connectionString
+        )
 
         if transactionGroup is None:
             self.updateButtons()
             return
 
         if self.nmRelation().isValid():
-            if (self.relation().referencedLayer() in transactionGroup.layers() and
-               self.relation().referencingLayer() in transactionGroup.layers() and
-               self.nmRelation().referencedLayer() in transactionGroup.layers()):
+            if (
+                self.relation().referencedLayer() in transactionGroup.layers()
+                and self.relation().referencingLayer() in transactionGroup.layers()
+                and self.nmRelation().referencedLayer() in transactionGroup.layers()
+            ):
                 self._layerInSameTransactionGroup = True
         else:
-            if (self.relation().referencedLayer() in transactionGroup.layers() and
-               self.relation().referencingLayer() in transactionGroup.layers()):
+            if (
+                self.relation().referencedLayer() in transactionGroup.layers()
+                and self.relation().referencingLayer() in transactionGroup.layers()
+            ):
                 self._layerInSameTransactionGroup = True
-

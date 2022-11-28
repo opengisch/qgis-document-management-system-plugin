@@ -10,11 +10,12 @@
 
 from qgis.gui import QgsAbstractRelationEditorWidgetFactory
 from document_management_system.gui.relation_editor_feature_side_widget import RelationEditorFeatureSideWidget
-from document_management_system.gui.relation_editor_feature_side_config_widget import RelationEditorFeatureSideConfigWidget
+from document_management_system.gui.relation_editor_feature_side_config_widget import (
+    RelationEditorFeatureSideConfigWidget,
+)
 
 
 class RelationEditorFeatureSideWidgetFactory(QgsAbstractRelationEditorWidgetFactory):
-
     @staticmethod
     def type():
         return "document_relation_editor_feature_side"
