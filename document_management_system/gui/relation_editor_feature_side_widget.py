@@ -235,7 +235,11 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     def _checkTransactionGroup(self):
 
         self._layerInSameTransactionGroup = False
-        connectionString = PluginHelper.connectionString(self.relation().referencedLayer().source())
+        referenced_layer = self.relation().referencedLayer()
+        if not self.relation().referencedLayer():
+            return
+
+        connectionString = PluginHelper.connectionString(referenced_layer.source())
         transactionGroup = QgsProject.instance().transactionGroup(self.relation().referencedLayer().providerType(),
                                                                   connectionString)
 
