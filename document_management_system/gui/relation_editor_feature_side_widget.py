@@ -410,7 +410,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         if self.nmRelation().isValid():
             layer = self.nmRelation().referencedLayer()
 
-        showDocumentFormDialog = QgsAttributeDialog(layer, layer.getFeature(self._currentDocumentId), False, self, True)
+        showDocumentFormDialog = QgsAttributeDialog(layer, layer.getFeature(self._currentDocumentId), False, self.parent(), True)
         showDocumentFormDialog.exec()
         self.updateUi()
 
