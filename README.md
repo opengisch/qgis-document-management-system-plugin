@@ -73,3 +73,13 @@ There is no distinction for polymorphic relation as from the feature point of vi
 ### Feature side
 
 ![Configuration feature side](docs/images/WidgetFeatureSideScreencast.gif)
+
+## Installation notes:
+
+The following QML modueles are required. On windows they are provided by the QGIS installation but on linux they may have to be installed manually:
+
+| QML Module        | Ubuntu package name         |
+|-------------------|-----------------------------|
+| Qt quick controls | qml-module-qtquick-controls |
+| Qt quick dialogs  | qml-module-qtquick-dialogs  |
+| Qt quick layouts  | qml-module-qtquick-layouts  |
