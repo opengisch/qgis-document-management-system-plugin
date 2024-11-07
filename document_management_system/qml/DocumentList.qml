@@ -103,8 +103,10 @@ Item {
                             listView.currentIndex = index
 
                             if(mouse.button == Qt.RightButton)
+                            {
+                                contextMenu.documentPath = DocumentPath
                                 contextMenu.popup()
-
+                            }
                         }
                         onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
                                                         : showMessageDialog(qsTr("Inexisting document"),
@@ -183,11 +185,14 @@ Item {
                             gridView.currentIndex = index
 
                             if(mouse.button == Qt.RightButton)
+                            {
+                                contextMenu.documentPath = DocumentPath
                                 contextMenu.popup()
+                            }
                         }
                         onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
                                                         : showMessageDialog(qsTr("Inexisting document"),
-                                                                            qsTr("Document '%1' does't exists.").arg(DocumentPath))
+                                                                            qsTr("Document '%1' doesn't exists.").arg(DocumentPath))
                     }
                 }
             }
@@ -249,9 +254,21 @@ Item {
             parentWidget.showDocumentForm();
         }
     }
+    Action {
+        id: action_CopyDocumentPath
+        text: "Copy document path"
+        icon.source: "qrc:///images/themes/default/mActionEditCopy.svg"
+        enabled: selectedDocumentId >= 0
+        onTriggered:  {
+            parentWidget.copyDocumentPath(contextMenu.documentPath);
+        }
+    }
 
     Menu {
         id: contextMenu
+
+        property string documentPath: ""
+
         MenuItem {
             action: action_ShowForm
         }
@@ -260,6 +277,9 @@ Item {
         }
         MenuItem {
             action: action_UnlinkDocument
+        }
+        MenuItem {
+            action: action_CopyDocumentPath
         }
     }
 

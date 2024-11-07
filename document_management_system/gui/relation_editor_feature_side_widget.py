@@ -12,7 +12,7 @@ from PyQt5.QtQuickWidgets import QQuickWidget
 import os
 from enum import Enum
 from qgis.PyQt.QtCore import QDir, QTimer, QUrl, QVariant, pyqtSignal, pyqtProperty, pyqtSlot
-from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtGui import QIcon, QGuiApplication
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from qgis.PyQt.uic import loadUiType
 from qgis.core import (
@@ -413,6 +413,14 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         showDocumentFormDialog = QgsAttributeDialog(layer, layer.getFeature(self._currentDocumentId), False, self.parent(), True)
         showDocumentFormDialog.exec()
         self.updateUi()
+
+    @pyqtSlot(str)
+    def copyDocumentPath(self, documentPath):
+
+        if self._currentDocumentId is None:
+            return
+        
+        QGuiApplication.clipboard().setText(documentPath)
 
     @pyqtSlot(bool)
     def listViewToolButtonToggled(self, checked):
