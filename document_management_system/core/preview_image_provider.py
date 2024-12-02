@@ -15,16 +15,12 @@ from qgis.PyQt.QtGui import QImageReader
 
 class PreviewImageProvider(QQuickImageProvider):
 
-    mime_database = QMimeDatabase()
-
     def __init__(self):
         super().__init__(QQuickImageProvider.Image)
 
         # use an image reader to ensure image orientation and transforms are correctly handled
         self._imageReader = QImageReader()
         self._imageReader.setAutoTransform(True)
-
-        print("supportedMimeTypes {}".format(self._imageReader.supportedMimeTypes()))
 
     def requestImage(self, id, size):
         self._imageReader.setFileName(id)
@@ -33,10 +29,6 @@ class PreviewImageProvider(QQuickImageProvider):
 
     @staticmethod
     def isMimeTypeSupported(filePath):
-        mime_type_name = str()
-        for mime_type in PreviewImageProvider.mime_database.mimeTypesForFileName(filePath):
-            if mime_type:
-                mime_type_name = mime_type.name()
-                break
-
-        return mime_type_name in QImageReader().supportedMimeTypes()
+        imageReader = QImageReader()
+        imageReader.setFileName(filePath)
+        return imageReader.canRead()
