@@ -22,6 +22,7 @@ from qgis.core import (
     QgsFeature,
     QgsFeatureRequest,
     QgsIconUtils,
+    QgsLogger,
     QgsVectorLayerUtils,
 )
 from qgis.gui import QgsAbstractRelationEditorWidget, QgsAttributeDialog, QgsFeatureSelectionDlg
@@ -245,13 +246,17 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
 
+        if not self.relation().isValid():
+            QgsLogger.warning(self.tr(f"Invalid relation set, relation id: '{self.relation().id()}'"))
+            self.updateButtons()
+            return
+
         self._setCardinality()
 
         self._checkTransactionGroup()
 
-        if self.relation().isValid():
-            self.relation().referencingLayer().editingStopped.connect(self.updateButtons)
-            self.relation().referencingLayer().editingStarted.connect(self.updateButtons)
+        self.relation().referencingLayer().editingStopped.connect(self.updateButtons)
+        self.relation().referencingLayer().editingStarted.connect(self.updateButtons)
 
         if self.nmRelation().isValid():
             self.nmRelation().referencedLayer().editingStarted.connect(self.updateButtons)

@@ -20,6 +20,7 @@ from qgis.core import (
     QgsExpressionContext,
     QgsExpressionContextUtils,
     QgsGeometry,
+    QgsLogger,
     QgsProject,
     QgsRelation,
     QgsSettingsEntryString,
@@ -203,11 +204,15 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
     def afterSetRelations(self):
         self._nmRelation = QgsProject.instance().relationManager().relation(str(self.nmRelationId()))
 
+        if not self.relation().isValid():
+            QgsLogger.warning(self.tr(f"Invalid relation set, relation id: '{self.relation().id()}'"))
+            self.updateButtons()
+            return
+
         self._checkTransactionGroup()
 
-        if self.relation().isValid():
-            self.relation().referencingLayer().editingStopped.connect(self.updateButtons)
-            self.relation().referencingLayer().editingStarted.connect(self.updateButtons)
+        self.relation().referencingLayer().editingStopped.connect(self.updateButtons)
+        self.relation().referencingLayer().editingStarted.connect(self.updateButtons)
 
         if self.nmRelation().isValid():
             self.nmRelation().referencedLayer().editingStarted.connect(self.updateButtons)
