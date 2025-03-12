@@ -8,7 +8,11 @@
 #
 # -----------------------------------------------------------
 
-from PyQt5.QtQuickWidgets import QQuickWidget
+try:
+    from qgis.PyQt.QtQuickWidgets import QQuickWidget
+except ImportError:
+    # https://github.com/qgis/QGIS/pull/60123
+    from PyQt5.QtQuickWidgets import QQuickWidget
 import os
 from enum import Enum
 from qgis.PyQt.QtCore import QDir, QTimer, QUrl, QVariant, pyqtSignal, pyqtProperty, pyqtSlot
