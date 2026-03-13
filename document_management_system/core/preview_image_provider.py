@@ -8,7 +8,11 @@
 #
 # -----------------------------------------------------------
 
-from PyQt5.QtQuick import QQuickImageProvider
+try:
+    from qgis.PyQt.QtQuick import QQuickImageProvider
+except ImportError:
+    from PyQt6.QtQuick import QQuickImageProvider
+
 from qgis.PyQt.QtCore import QMimeDatabase
 from qgis.PyQt.QtGui import QImageReader
 
@@ -16,7 +20,7 @@ from qgis.PyQt.QtGui import QImageReader
 class PreviewImageProvider(QQuickImageProvider):
 
     def __init__(self):
-        super().__init__(QQuickImageProvider.Image)
+        super().__init__(QQuickImageProvider.ImageType.Image)
 
         # use an image reader to ensure image orientation and transforms are correctly handled
         self._imageReader = QImageReader()

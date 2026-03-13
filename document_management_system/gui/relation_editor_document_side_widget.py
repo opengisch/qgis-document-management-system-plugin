@@ -44,10 +44,10 @@ class TreeWidgetItemType(Enum):
 
 
 class TreeWidgetItemRole(IntEnum):
-    Type = Qt.UserRole + 1
-    Layer = Qt.UserRole + 2
-    Feature = Qt.UserRole + 3
-    LinkFeature = Qt.UserRole + 4
+    Type = Qt.ItemDataRole.UserRole + 1
+    Layer = Qt.ItemDataRole.UserRole + 2
+    Feature = Qt.ItemDataRole.UserRole + 3
+    LinkFeature = Qt.ItemDataRole.UserRole + 4
 
 
 class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi):
@@ -87,14 +87,14 @@ class RelationEditorDocumentSideWidget(QgsAbstractRelationEditorWidget, WidgetUi
         self.mToggleEditingToolButton.setDefaultAction(self.actionToggleEditing)
         self.mSaveEditsToolButton.setDefaultAction(self.actionSaveEdits)
         self.mShowFormToolButton.setDefaultAction(self.actionShowForm)
-        self.mShowFormToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.mShowFormToolButton.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         self.mLinkFeaturesToolButton.setDefaultAction(self.actionLinkFeature)
-        self.mLinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.mLinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         self.mUnlinkFeaturesToolButton.setDefaultAction(self.actionUnlinkFeature)
-        self.mUnlinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.mUnlinkFeaturesToolButton.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
 
         # TreeWidgetItem menu
-        self.mFeaturesTreeWidget.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.mFeaturesTreeWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
         self.mFeaturesTreeWidget.addAction(self.actionShowForm)
         self.mFeaturesTreeWidget.addAction(self.actionUnlinkFeature)
 
