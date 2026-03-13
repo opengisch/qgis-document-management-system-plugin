@@ -5,6 +5,11 @@ on:
   pull_request:
 
 jobs:
+  pyqt6-check:
+    uses: opengisch/qgis-plugin-ci/.github/workflows/pyqt6_test.yml@master
+    with:
+      plugin_path: document_management_system
+
   test:
     runs-on: ubuntu-latest
 
