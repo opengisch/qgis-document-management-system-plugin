@@ -22,20 +22,20 @@ from document_management_system.core.preview_image_provider import PreviewImageP
 
 
 class Role(Enum):
-    RelationRole = Qt.UserRole + 1
-    RelationIdRole = Qt.UserRole + 2
-    AggregateRole = Qt.UserRole + 3
-    FieldRole = Qt.UserRole + 4
+    RelationRole = Qt.ItemDataRole.UserRole + 1
+    RelationIdRole = Qt.ItemDataRole.UserRole + 2
+    AggregateRole = Qt.ItemDataRole.UserRole + 3
+    FieldRole = Qt.ItemDataRole.UserRole + 4
 
 
 class DocumentModel(QAbstractTableModel):
 
-    DocumentIdRole = Qt.UserRole + 1
-    DocumentPathRole = Qt.UserRole + 2
-    DocumentNameRole = Qt.UserRole + 3
-    DocumentExistsRole = Qt.UserRole + 4
-    DocumentToolTipRole = Qt.UserRole + 5
-    DocumentIsImageRole = Qt.UserRole + 6
+    DocumentIdRole = Qt.ItemDataRole.UserRole + 1
+    DocumentPathRole = Qt.ItemDataRole.UserRole + 2
+    DocumentNameRole = Qt.ItemDataRole.UserRole + 3
+    DocumentExistsRole = Qt.ItemDataRole.UserRole + 4
+    DocumentToolTipRole = Qt.ItemDataRole.UserRole + 5
+    DocumentIsImageRole = Qt.ItemDataRole.UserRole + 6
 
     def __init__(self, parent: QObject = None):
         super(DocumentModel, self).__init__(parent)
@@ -71,7 +71,7 @@ class DocumentModel(QAbstractTableModel):
         return None
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+        flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
         return flags
 
     def data(self, index: QModelIndex, role: int = ...):
@@ -80,7 +80,7 @@ class DocumentModel(QAbstractTableModel):
 
         return self._document_list[index.row()][role]
 
-    def setData(self, index: QModelIndex, value, role: int = Qt.EditRole) -> bool:
+    def setData(self, index: QModelIndex, value, role: int = Qt.ItemDataRole.EditRole) -> bool:
         if index.row() < 0 or index.row() >= self.rowCount(QModelIndex()):
             return False
 

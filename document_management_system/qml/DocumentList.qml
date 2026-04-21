@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Dialogs 1.1
-import QtQuick.Layouts 1.15
+import QtQuick 6.5
+import QtQuick.Controls 6.4
+import QtQuick.Layouts 2.15
+import QtQuick.Dialogs 6.5
 
 Item {
 
@@ -99,18 +99,17 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
-                        onClicked: {
-                            listView.currentIndex = index
+                        onClicked: function(mouse) {
+                            gridView.currentIndex = index
 
-                            if(mouse.button == Qt.RightButton)
-                            {
+                            if (mouse.button === Qt.RightButton) {
                                 contextMenu.documentPath = DocumentPath
                                 contextMenu.popup()
                             }
                         }
                         onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
                                                         : showMessageDialog(qsTr("Inexisting document"),
-                                                                            qsTr("Document '%1' does't exists.").arg(DocumentPath));
+                                                                            qsTr("Document '%1' doesn't exists.").arg(DocumentPath))
                     }
                 }
             }
@@ -181,18 +180,17 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
-                        onClicked: {
-                            gridView.currentIndex = index
+                        onClicked: function(mouse) {
+                            listView.currentIndex = index
 
-                            if(mouse.button == Qt.RightButton)
-                            {
+                            if (mouse.button === Qt.RightButton) {
                                 contextMenu.documentPath = DocumentPath
                                 contextMenu.popup()
                             }
                         }
                         onDoubleClicked: DocumentExists ? Qt.openUrlExternally(DocumentPath)
                                                         : showMessageDialog(qsTr("Inexisting document"),
-                                                                            qsTr("Document '%1' doesn't exists.").arg(DocumentPath))
+                                                                            qsTr("Document '%1' does't exists.").arg(DocumentPath));
                     }
                 }
             }

@@ -12,7 +12,7 @@ try:
     from qgis.PyQt.QtQuickWidgets import QQuickWidget
 except ImportError:
     # https://github.com/qgis/QGIS/pull/60123
-    from PyQt5.QtQuickWidgets import QQuickWidget
+    from qgis.PyQt.QtQuickWidgets import QQuickWidget
 import os
 from enum import Enum
 from qgis.PyQt.QtCore import QDir, QTimer, QUrl, QVariant, pyqtSignal, pyqtProperty, pyqtSlot
@@ -123,7 +123,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         self.view.engine().addImageProvider("fileTypeSmallIconProvider", self._fileTypeSmallIconProvider)
         self.view.engine().addImageProvider("fileTypeBigIconProvider", self._fileTypeBigIconProvider)
         self.view.setSource(QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), "../qml/DocumentList.qml")))
-        self.view.setResizeMode(QQuickWidget.SizeRootObjectToView)
+        self.view.setResizeMode(QQuickWidget.ResizeMode.SizeRootObjectToView)
         self.layout().addWidget(self.view)
 
         # Set initial state for add / remove etc.buttons
@@ -331,7 +331,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
         fields = self.relation().referencingLayer().fields()
 
         # For generated relations insert the referenced layer field
-        if self.relation().type() == QgsRelation.Generated:
+        if self.relation().type() == QgsRelation.RelationType.Generated:
             polyRel = self.relation().polymorphicRelation()
             keyAttrs[fields.indexFromName(polyRel.referencedLayerField())] = polyRel.layerRepresentation(
                 self.relation().referencedLayer()
@@ -339,7 +339,7 @@ class RelationEditorFeatureSideWidget(QgsAbstractRelationEditorWidget, WidgetUi)
 
         if self.nmRelation().isValid():
             # only normal relations support m:n relation
-            if self.nmRelation().type() != QgsRelation.Normal:
+            if self.nmRelation().type() != QgsRelation.RelationType.Normal:
                 QMessageBox.critical(
                     self,
                     self.tr("Add document"),
