@@ -9,16 +9,17 @@
 # -----------------------------------------------------------
 
 try:
-    from qgis.PyQt.QtQuick import QQuickImageProvider
-except ImportError:
+    # wait on https://github.com/qgis/QGIS/pull/65874
+    # from qgis.PyQt.QtQuick import QQuickImageProvider
     from PyQt6.QtQuick import QQuickImageProvider
+except ImportError:
+    # QtQuick was not monkey patched in QGIS 3.x
+    from PyQt5.QtQuick import QQuickImageProvider
 
-from qgis.PyQt.QtCore import QMimeDatabase
 from qgis.PyQt.QtGui import QImageReader
 
 
 class PreviewImageProvider(QQuickImageProvider):
-
     def __init__(self):
         super().__init__(QQuickImageProvider.ImageType.Image)
 
