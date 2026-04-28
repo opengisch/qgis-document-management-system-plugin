@@ -8,19 +8,25 @@ on:
   pull_request:
 
 jobs:
-  pyqt6-check:
-    uses: opengisch/qgis-plugin-ci/.github/workflows/pyqt6_test.yml@master
-    with:
-      plugin_path: document_management_system
-
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        qgis_version: [3.44-questing, 4.0-questing]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Run tests
       run: |
-        docker run -v ${GITHUB_WORKSPACE}:/src -w /src opengisch/qgis:stable sh -c 'xvfb-run pytest-3'
-      env:
-        DOCKER_IMAGE: ${{ steps.docker-build.outputs.FULL_IMAGE_NAME }}
+        docker run \
+          -v $(pwd):/usr/src \
+          -w /usr/src \
+          qgis/qgis:${{ matrix.qgis_version }} \
+          sh -c '
+            apt-get install -y python3-pyqt5.qtquick || true
+            PYVER=$(python3 -c "import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")")
+            export PYTHONPATH=/usr/share/qgis/python:/usr/share/qgis/python/plugins:/usr/lib/python3/dist-packages:/usr/lib/python${PYVER}/dist-packages
+            xvfb-run pytest-3
+          '
