@@ -25,6 +25,7 @@ jobs:
           -w /usr/src \
           qgis/qgis:${{ matrix.qgis_version }} \
           sh -c '
+            apt-get install -y python3-pyqt5.qtquick || true
             PYVER=$(python3 -c "import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")")
             export PYTHONPATH=/usr/share/qgis/python:/usr/share/qgis/python/plugins:/usr/lib/python3/dist-packages:/usr/lib/python${PYVER}/dist-packages
             xvfb-run pytest-3
